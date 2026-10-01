@@ -120,28 +120,33 @@ def main():
         name = MEMBERS[mi][0]
         country = MEMBERS[mi][2]
         currency = currency_for_country(country)
-        db.execute(
+        cur = db.execute(
             "INSERT INTO applications (user_id, full_name, country, crisis_type, amount_requested, "
             "currency, household_size, situation, status, awarded_amount, admin_notes, created_at, updated_at) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (uid, name, country, crisis, amount, currency, hh, situation, status, awarded,
              "Approved after review." if status == "approved" else None, now(7), now(2)),
         )
+        app_id = cur.lastrowid
         if status == "approved" and awarded:
-            ref = gen_ref()
+            # Approved grants are recorded as 'grant' disbursements (fee-free) using the
+            # same deterministic reference the admin approval flow uses, so a re-approval
+            # or backfill never double-credits the member.
+            ref = f"GRANT-APP-{app_id}"
             db.execute(
                 "INSERT INTO transactions (user_id, type, amount, currency, description, reference, "
-                "sender_name, sender_account, sender_routing, status, created_by, created_at) "
-                "VALUES (?,?,?,?,?,?,?,?,?,'completed',1,?)",
-                (uid, "deposit", awarded, currency, f"{crisis} grant disbursement", ref,
-                 "Bright Future Grant", "8001234567", "121000358", now(2)),
+                "sender_name, status, created_by, created_at) "
+                "VALUES (?, 'grant', ?, ?, ?, ?, ?, 'completed', 1, ?)",
+                (uid, awarded, currency, f"Grant disbursement for approved application #{app_id}",
+                 ref, "Bright Future Grant", now(2)),
             )
             db.execute(
                 "INSERT INTO notifications (user_id, title, body, link, category, is_read, created_at) "
                 "VALUES (?,?,?,?,?,?,?)",
-                (uid, f"Deposit received — {currency} {awarded:,.2f}",
-                 f"A deposit of {currency} {awarded:,.2f} has been made to your Bright Future Grant account. "
-                 "A full receipt is available in your dashboard.", "/transactions", "transaction", 0, now(2)),
+                (uid, f"Grant disbursed — {currency} {awarded:,.2f}",
+                 f"A grant of {currency} {awarded:,.2f} has been credited to your Bright Future Grant "
+                 "account balance. A full receipt is available in your dashboard.",
+                 "/transactions", "transaction", 0, now(2)),
             )
 
     # Confirm the first deposit for members whose grant was disbursed (0, 1, 2).
