@@ -87,8 +87,11 @@ r = a.post(f"{BASE}/admin/push-money", data={
 check("admin push-money", r.status_code == 200 and "deposited" in r.text)
 
 # ---- 6. Member sees balance + receipt ----
+# Approving the grant (step 3) credits the awarded amount, so the balance is
+# 2,500 (grant) + 1,500 (admin deposit) = 4,000.
 r = u.get(f"{BASE}/account")
-check("member balance updated (1,500.00)", "1,500.00" in r.text)
+check("grant disbursement credited (2,500.00)", "2,500.00" in r.text)
+check("member balance updated (4,000.00)", "4,000.00" in r.text)
 m = re.search(r'/receipt/(\d+)', r.text)
 tx_id = m.group(1) if m else "1"
 r = u.get(f"{BASE}/receipt/{tx_id}")
@@ -168,7 +171,8 @@ r = u.post(f"{BASE}/withdraw", data={
 check("withdrawal request submitted (pending)", r.status_code == 200 and "pending approval" in r.text)
 check("withdrawal appears in history", DEST in r.text)
 r = u.get(f"{BASE}/account")
-check("balance held after request (1,400.00)", "1,400.00" in r.text)
+# 4,000 (grant + deposit) - 100 held for the pending withdrawal = 3,900.
+check("balance held after request (3,900.00)", "3,900.00" in r.text)
 
 # ---- 17. Admin approves the withdrawal from the approvals queue ----
 r = a.get(f"{BASE}/admin/approvals")

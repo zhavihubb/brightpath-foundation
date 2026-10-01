@@ -222,7 +222,7 @@
               <tr>
                 <td>{{ t['created_at']|datefmt }}</td>
                 <td>{{ t['description'] }}</td>
-                <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+                <td class="amount-{{ 'pos' if t['type'] in ['deposit','grant'] else 'neg' }}">{{ '+' if t['type'] in ['deposit','grant'] else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
                 <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
                 <td>{% if t['status']=='completed' %}<a href="{{ url_for('receipt', tx_id=t['id']) }}">Receipt</a>{% endif %}</td>
               </tr>

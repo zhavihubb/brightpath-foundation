@@ -95,7 +95,7 @@
             <td>{{ t['id'] }}</td>
             <td>{{ t['created_at']|datetimefmt }}<br><span style="font-size:.76rem;color:var(--muted);"><code>{{ t['reference'] }}</code></span></td>
             <td>{{ t['user_name'] }}<br><span style="font-size:.8rem;color:var(--muted);">{{ t['user_email'] }}</span><br><span style="font-size:.78rem;color:var(--muted);">Acct {{ t['user_account'] or '—' }}</span></td>
-            <td><span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span></td>
+            <td><span class="badge badge-{{ 'approved' if t['type'] in ['deposit','grant'] else 'under_review' }}">{{ 'Grant' if t['type']=='grant' else t['type']|capitalize }}</span></td>
             <td>
               {% if t['type'] == 'withdrawal' %}
                 {{ t['method'] or '—' }}{% if t['network'] %}<br><span style="font-size:.78rem;color:var(--muted);">{{ t['network'] }}</span>{% endif %}
@@ -104,7 +104,7 @@
                 <span style="color:var(--muted);">{{ t['description'] }}</span>
               {% endif %}
             </td>
-            <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td class="amount-{{ 'pos' if t['type'] in ['deposit','grant'] else 'neg' }}">{{ '+' if t['type'] in ['deposit','grant'] else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
             <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
             <td class="tx-actions">
               {% if t['status'] == 'pending' %}

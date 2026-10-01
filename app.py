@@ -923,6 +923,77 @@ def assign_account(user_id, activate=True):
 
 
 # ---------------------------------------------------------------------------
+# Grant disbursement (fee-free)
+# ---------------------------------------------------------------------------
+# When an administrator approves a grant application with an awarded amount, the
+# award is credited to the member's available balance and recorded as a completed
+# 'grant' transaction (with a printable receipt). Recipients are never charged a
+# fee to receive a grant. The reference is deterministic so re-approving or
+# editing the award never double-credits the member.
+
+def grant_reference(app_id):
+    return f"GRANT-APP-{app_id}"
+
+
+def credit_grant_for_application(app_id, user_id, amount, currency, actor_id=None):
+    """Idempotently record a completed grant disbursement and credit the balance."""
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return None
+    if amount <= 0:
+        return None
+    db = get_db()
+    ref = grant_reference(app_id)
+    existing = db.execute(
+        "SELECT * FROM transactions WHERE reference = ? AND type = 'grant'", (ref,)
+    ).fetchone()
+    if existing:
+        # Award amount changed on re-approval: adjust the balance by the delta only.
+        delta = amount - float(existing["amount"])
+        if abs(delta) >= 0.005:
+            db.execute(
+                "UPDATE transactions SET amount = ?, currency = ?, status = 'completed' WHERE id = ?",
+                (amount, currency, existing["id"]),
+            )
+            db.execute(
+                "UPDATE users SET balance = balance + ? WHERE id = ?", (delta, user_id)
+            )
+            db.commit()
+        return existing["id"]
+    s = all_settings()
+    cur = db.execute(
+        "INSERT INTO transactions (user_id, type, amount, currency, description, reference, "
+        "sender_name, status, created_by, created_at) "
+        "VALUES (?, 'grant', ?, ?, ?, ?, ?, 'completed', ?, ?)",
+        (user_id, amount, currency,
+         f"Grant disbursement for approved application #{app_id}",
+         ref, s["foundation_name"], actor_id, now_iso()),
+    )
+    db.execute("UPDATE users SET balance = balance + ? WHERE id = ?", (amount, user_id))
+    db.commit()
+    return cur.lastrowid
+
+
+def reverse_grant_for_application(app_id, user_id):
+    """Undo a grant credit when an approved application is later declined/changed."""
+    db = get_db()
+    ref = grant_reference(app_id)
+    existing = db.execute(
+        "SELECT * FROM transactions WHERE reference = ? AND type = 'grant' AND status = 'completed'",
+        (ref,),
+    ).fetchone()
+    if not existing:
+        return
+    db.execute(
+        "UPDATE users SET balance = MAX(balance - ?, 0) WHERE id = ?",
+        (float(existing["amount"]), user_id),
+    )
+    db.execute("UPDATE transactions SET status = 'reversed' WHERE id = ?", (existing["id"],))
+    db.commit()
+
+
+# ---------------------------------------------------------------------------
 # CSRF protection
 # ---------------------------------------------------------------------------
 
@@ -1719,8 +1790,10 @@ def admin_review(app_id):
 
     applicant = db.execute("SELECT * FROM users WHERE id = ?", (row["user_id"],)).fetchone()
 
-    # On approval: issue account + routing numbers if the member doesn't have them yet.
+    # On approval: issue account + routing numbers if the member doesn't have them yet,
+    # then credit the awarded amount to the member's available balance (fee-free).
     account_info = ""
+    credited = False
     if decision == "approved" and applicant:
         info = assign_account(applicant["id"], activate=True)
         if info:
@@ -1729,6 +1802,15 @@ def admin_review(app_id):
                 f"Account number: {info['account_number']}\n"
                 f"Routing number: {info['routing_number']}"
             )
+        if awarded_val:
+            credit_grant_for_application(
+                app_id, applicant["id"], awarded_val, row["currency"], current_user()["id"]
+            )
+            credited = True
+    elif applicant:
+        # If an application that was previously approved is moved away from approved,
+        # reverse any grant credit that was applied.
+        reverse_grant_for_application(app_id, applicant["id"])
 
     if applicant:
         labels = {
@@ -1741,6 +1823,12 @@ def admin_review(app_id):
         extra = ""
         if decision == "approved" and awarded_val:
             extra = f"\n\nAwarded amount: {row['currency']} {awarded_val:,.0f}."
+            if credited:
+                extra += (
+                    "\nThis grant has been credited to your Bright Future Grant account balance "
+                    "and is available to withdraw. You will never be asked to pay a fee to "
+                    "receive your grant."
+                )
         if notes:
             extra += f"\n\nNote from the review team: {notes}"
         notify_and_email(
@@ -1889,7 +1977,8 @@ def admin_transactions():
         "WHERE role = 'applicant' AND account_number IS NOT NULL ORDER BY full_name"
     ).fetchall()
     total = db.execute(
-        "SELECT COALESCE(SUM(amount),0) AS s FROM transactions WHERE type = 'deposit'"
+        "SELECT COALESCE(SUM(amount),0) AS s FROM transactions "
+        "WHERE type IN ('deposit','grant') AND status = 'completed'"
     ).fetchone()["s"]
     pending_count = db.execute(
         "SELECT COUNT(*) AS c FROM transactions WHERE status = 'pending'"
@@ -2294,7 +2383,8 @@ def compute_stats(db):
         "SELECT COUNT(*) AS c FROM applications WHERE status = 'declined'"
     ).fetchone()["c"]
     disbursed = db.execute(
-        "SELECT COALESCE(SUM(amount),0) AS s FROM transactions WHERE type = 'deposit'"
+        "SELECT COALESCE(SUM(amount),0) AS s FROM transactions "
+        "WHERE type IN ('deposit','grant') AND status = 'completed'"
     ).fetchone()["s"]
     users = db.execute("SELECT COUNT(*) AS c FROM users WHERE role = 'applicant'").fetchone()["c"]
     active_accounts = db.execute(

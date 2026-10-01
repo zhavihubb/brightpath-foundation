@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from werkzeug.security import generate_password_hash
 
-DB = os.path.join(os.path.dirname(__file__), "charity.db")
+DB = os.environ.get("BRIGHTPATH_DB") or os.path.join(os.path.dirname(__file__), "charity.db")
 
 # Currency is derived from each member's country (single source of truth in app.py).
 try:

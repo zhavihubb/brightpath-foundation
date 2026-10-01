@@ -149,8 +149,8 @@
             <td>{{ t['created_at']|datetimefmt }}</td>
             <td><code>{{ t['reference'] }}</code></td>
             <td>{{ t['description'] }}</td>
-            <td><span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span></td>
-            <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td><span class="badge badge-{{ 'approved' if t['type'] in ['deposit','grant'] else 'under_review' }}">{{ 'Grant' if t['type']=='grant' else t['type']|capitalize }}</span></td>
+            <td class="amount-{{ 'pos' if t['type'] in ['deposit','grant'] else 'neg' }}">{{ '+' if t['type'] in ['deposit','grant'] else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
             <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
             <td>{% if t['status']=='completed' %}<a class="btn btn-light btn-sm" href="{{ url_for('receipt', tx_id=t['id']) }}">View receipt</a>{% else %}<span class="muted-note">—</span>{% endif %}</td>
           </tr>

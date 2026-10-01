@@ -23,19 +23,19 @@
       </div>
 
       <div class="receipt-title">
-        <h1>{{ 'Withdrawal' if tx['type']=='withdrawal' else 'Deposit' }} Receipt</h1>
+        <h1>{{ 'Withdrawal' if tx['type']=='withdrawal' else ('Grant Disbursement' if tx['type']=='grant' else 'Deposit') }} Receipt</h1>
         <p>Official record of funds {{ 'withdrawn from' if tx['type']=='withdrawal' else 'deposited into' }} your Bright Future Grant member account.</p>
       </div>
 
       <div class="receipt-amount">
-        <span class="receipt-amount-label">Amount {{ 'withdrawn' if tx['type']=='withdrawal' else 'deposited' }}</span>
+        <span class="receipt-amount-label">Amount {{ 'withdrawn' if tx['type']=='withdrawal' else ('granted' if tx['type']=='grant' else 'deposited') }}</span>
         <div class="receipt-amount-value">{{ tx['currency'] }} {{ tx['amount']|money }}</div>
       </div>
 
       <div class="receipt-grid">
         <div class="receipt-row"><span>Reference</span><strong><code>{{ tx['reference'] }}</code></strong></div>
         <div class="receipt-row"><span>Date</span><strong>{{ tx['created_at']|datetimefmt }}</strong></div>
-        <div class="receipt-row"><span>Type</span><strong>{{ tx['type']|capitalize }}</strong></div>
+        <div class="receipt-row"><span>Type</span><strong>{{ 'Grant' if tx['type']=='grant' else tx['type']|capitalize }}</strong></div>
         <div class="receipt-row"><span>Status</span><strong>{{ tx['status']|statuslabel }}</strong></div>
         <div class="receipt-row"><span>Description</span><strong>{{ tx['description'] }}</strong></div>
         {% if tx['reviewed_at'] %}<div class="receipt-row"><span>Reviewed</span><strong>{{ tx['reviewed_at']|datetimefmt }}</strong></div>{% endif %}
