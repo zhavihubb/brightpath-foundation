@@ -51,7 +51,7 @@ app_id = m.group(1) if m else "1"
 # ---- 3. Admin login & approve ----
 a = requests.Session()
 tok, _ = csrf(a, f"{BASE}/login")
-r = a.post(f"{BASE}/login", data={"_csrf_token": tok, "email": "admin@brightpath.org", "password": "Admin@12345"}, allow_redirects=True)
+r = a.post(f"{BASE}/login", data={"_csrf_token": tok, "email": "admin@brightfuturegrant.com", "password": "Admin@12345"}, allow_redirects=True)
 check("admin login -> admin 200", r.status_code == 200 and "Review dashboard" in r.text)
 
 tok, _ = csrf(a, f"{BASE}/admin")
@@ -201,7 +201,7 @@ r = a.post(f"{BASE}/admin/settings", data=[
     ("m_network", "Bitcoin"), ("m_address", "bc1qeditedwallet000000000000000000000000"),
     ("m_instructions", "Send BTC only."), ("m_enabled", "1"),
     ("m_id", "paypal"), ("m_name", "PayPal"), ("m_type", "wallet"),
-    ("m_network", ""), ("m_address", "payouts@brightpath.org"),
+    ("m_network", ""), ("m_address", "payouts@brightfuturegrant.com"),
     ("m_instructions", "PayPal email only."), ("m_enabled", "1"),
 ], allow_redirects=True)
 check("admin saved edited wallets", r.status_code == 200 and "bc1qeditedwallet000000000000000000000000" in r.text)

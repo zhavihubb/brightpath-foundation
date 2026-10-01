@@ -5,7 +5,7 @@ This is optional. To start completely fresh instead, delete charity.db and
 restart the app (it will recreate the schema and seed only the admin account).
 
 Demo administrator login:
-    admin@brightpath.org / Admin@12345
+    admin@brightfuturegrant.com / Admin@12345
 Demo member login: any listed email / Password123
 """
 import os

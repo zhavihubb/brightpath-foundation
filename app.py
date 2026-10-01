@@ -67,7 +67,7 @@ SUPPORT_FOLDER = os.path.join(UPLOAD_FOLDER, "support")
 
 # Bootstrap administrator — created only on the very first run of an empty database.
 # Override these in production so the default password is never used.
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@brightpath.org")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@brightfuturegrant.com")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@12345")
 
 app = Flask(__name__)
@@ -89,7 +89,7 @@ SMTP_HOST = os.environ.get("SMTP_HOST")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASS = os.environ.get("SMTP_PASS")
-SMTP_FROM = os.environ.get("SMTP_FROM", "no-reply@brightpath.org")
+SMTP_FROM = os.environ.get("SMTP_FROM", "no-reply@brightfuturegrant.com")
 
 # Professional first-deposit policy write-up shown on every member's dashboard.
 # Cryptocurrency is the first and only accepted method for a first deposit; every
@@ -124,7 +124,7 @@ DEFAULT_SETTINGS = {
     "foundation_bank": "Brightpath Trust Bank",
     "foundation_swift": "BRTPUS33XXX",
     "foundation_address": "1 Relief Way, Wilmington, DE 19801, USA",
-    "support_email": "support@brightpath.org",
+    "support_email": "support@brightfuturegrant.com",
     # First-deposit policy notice (editable from Admin → Settings)
     "first_deposit_notice_enabled": "1",
     "first_deposit_notice_title": "Important: First Deposit & Payment Method Policy",
@@ -290,7 +290,7 @@ DEFAULT_WITHDRAWAL_METHODS = [
     },
     {
         "id": "paypal", "name": "PayPal", "type": "wallet", "network": "",
-        "address": "payments@brightpath.org",
+        "address": "payments@brightfuturegrant.com",
         "instructions": "Provide the email address linked to your PayPal account.",
         "enabled": True,
     },

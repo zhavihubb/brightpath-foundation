@@ -136,14 +136,14 @@ python3 seed_demo.py     # adds demo members, applications, deposits, withdrawal
 - **Run it locally:** `PORT=8080 python3 app.py` → http://127.0.0.1:8080
   (or `gunicorn -b 0.0.0.0:8080 wsgi:app` for a production-style server).
   To share it publicly, see **Deployment & hosting** below.
-- **Admin login:** `admin@brightpath.org` / `Admin@12345`
+- **Admin login:** `admin@brightfuturegrant.com` / `Admin@12345`
 - **Demo member:** `amara@example.com` / `Password123` (and `luis@example.com`,
   `priya@example.com`, `daniel@example.com` — all `Password123`)
 - **Applicant:** register at `/register`, then apply at `/apply`
 
 ## Accounts & demo credentials
 
-- **Administrator (seeded):** `admin@brightpath.org` / `Admin@12345`
+- **Administrator (seeded):** `admin@brightfuturegrant.com` / `Admin@12345`
   → lands on the **admin review dashboard** (`/admin`)
 - **Applicants / members:** register at `/register` (free), then apply at `/apply`.
 - **Demo members (if you ran `seed_demo.py`):** `amara@example.com`, `luis@example.com`,
@@ -327,7 +327,7 @@ export SMTP_HOST=smtp.example.com
 export SMTP_PORT=587
 export SMTP_USER=you@example.com
 export SMTP_PASS=your-app-password
-export SMTP_FROM="Brightpath <no-reply@brightpath.org>"
+export SMTP_FROM="Brightpath <no-reply@brightfuturegrant.com>"
 ```
 
 ## Testing
@@ -370,13 +370,16 @@ marketing landing page in `public/`, not the app itself.
 The full, step-by-step guide lives in **[`DEPLOYMENT.md`](DEPLOYMENT.md)**. The short
 version:
 
-### 1. Buy the domain (WhoGoHost) and move DNS to Cloudflare
-1. Register the domain at [whogohost.com](https://www.whogohost.com).
-2. Create a free [Cloudflare](https://dash.cloudflare.com) account → **Add a site** →
-   enter your domain → choose the **Free** plan.
-3. Cloudflare shows **two nameservers** (e.g. `ada.ns.cloudflare.com`). In the WhoGoHost
+### 1. Point the domain (WhoGoHost) at Cloudflare
+Domain: **`brightfuturegrant.com`** (already registered at WhoGoHost).
+1. Create a free [Cloudflare](https://dash.cloudflare.com) account → **Add a site** →
+   enter `brightfuturegrant.com` → choose the **Free** plan.
+2. Cloudflare shows **two nameservers** (e.g. `ada.ns.cloudflare.com`). In the WhoGoHost
    dashboard, set the domain's **nameservers** to those two values and save.
-4. Wait for Cloudflare to report the zone as **Active** (usually minutes to a few hours).
+3. Wait for Cloudflare to report the zone as **Active** (usually minutes to a few hours).
+
+Planned hostnames: `app.brightfuturegrant.com` → the Flask app (Tunnel);
+`brightfuturegrant.com` + `www` → the static landing page (Pages).
 
 ### 2. Run the app with Docker (on any VPS)
 ```bash
@@ -394,7 +397,7 @@ gunicorn --workers 3 --threads 4 --timeout 120 --bind 0.0.0.0:8080 wsgi:app
 ### 3. Publish it through a Cloudflare Tunnel
 In the Cloudflare dashboard → **Zero Trust → Networks → Tunnels → Create a tunnel**
 (choose **Cloudflared**), copy the **tunnel token** into `CLOUDFLARE_TUNNEL_TOKEN` in
-`.env`, and add a **Public Hostname** such as `app.your-domain.com` → service
+`.env`, and add a **Public Hostname** such as `app.brightfuturegrant.com` → service
 `http://brightpath:8080`. Cloudflare then serves the app over HTTPS with no open
 inbound ports.
 

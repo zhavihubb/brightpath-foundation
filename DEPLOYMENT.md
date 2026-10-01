@@ -7,6 +7,14 @@ getting the code onto **GitHub**, and hosting the Flask app behind a
 
 ---
 
+> **Your setup at a glance**
+> - **Domain:** `brightfuturegrant.com` (WhoGoHost, renews 30 Sep 2027)
+> - **App:** `https://app.brightfuturegrant.com` → Flask app via Cloudflare Tunnel
+> - **Landing page:** `https://brightfuturegrant.com` → static page on Cloudflare Pages
+> - **Code:** <https://github.com/zhavihubb/brightpath-foundation>
+
+---
+
 ## 0. How the pieces fit together
 
 | Piece | What it does | Where it lives |
@@ -53,9 +61,18 @@ cd brightpath-foundation
 
 ## 2. Point your WhoGoHost domain at Cloudflare
 
-1. **Buy the domain** at WhoGoHost (e.g. `brightpath.org`).
+**Your domain:** `brightfuturegrant.com` (registered at WhoGoHost, renews 30 Sep 2027).
+
+The plan for this domain:
+
+| Hostname | Serves | Where |
+|----------|--------|-------|
+| `app.brightfuturegrant.com` | The full Flask application | Cloudflare **Tunnel** (step 4) |
+| `brightfuturegrant.com` + `www` | Static marketing landing page | Cloudflare **Pages** (step 6) |
+
+1. ~~Buy the domain~~ ✅ Already bought at WhoGoHost.
 2. **Create a free Cloudflare account** at <https://dash.cloudflare.com>.
-3. Click **Add a site**, enter your domain, and choose the **Free** plan.
+3. Click **Add a site**, enter `brightfuturegrant.com`, and choose the **Free** plan.
 4. Cloudflare gives you **two nameservers**, e.g.:
    ```
    ada.ns.cloudflare.com
@@ -120,7 +137,7 @@ docker compose up -d --build
 docker compose logs -f brightpath    # watch it boot
 ```
 
-Visit **https://app.your-domain.com** — you should see Brightpath with a valid
+Visit **https://app.brightfuturegrant.com** — you should see Brightpath with a valid
 Cloudflare TLS certificate.
 
 ### First login
@@ -181,8 +198,8 @@ npx wrangler pages deploy public --project-name brightpath
 4. Deploy, then add your **apex/www** domain under the project's **Custom
    domains**.
 
-Now `https://your-domain.com` shows the landing page while
-`https://app.your-domain.com` runs the full application.
+Now `https://brightfuturegrant.com` shows the landing page while
+`https://app.brightfuturegrant.com` runs the full application.
 
 ---
 

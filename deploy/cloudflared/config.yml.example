@@ -6,7 +6,7 @@
 #
 #   cloudflared tunnel login
 #   cloudflared tunnel create brightpath
-#   cloudflared tunnel route dns brightpath app.your-domain.com
+#   cloudflared tunnel route dns brightpath app.brightfuturegrant.com
 #   cloudflared tunnel --config deploy/cloudflared/config.yml run
 #
 # The tunnel makes an OUTBOUND connection to Cloudflare, so you never need to
@@ -17,14 +17,14 @@ credentials-file: /etc/cloudflared/REPLACE_WITH_TUNNEL_ID.json
 
 ingress:
   # The Brightpath Flask app (gunicorn on port 8080).
-  - hostname: app.your-domain.com
+  - hostname: app.brightfuturegrant.com
     service: http://localhost:8080
     originRequest:
       noTLSVerify: true
       connectTimeout: 30s
 
   # Optional: also serve the apex/www through the same app.
-  # - hostname: www.your-domain.com
+  # - hostname: www.brightfuturegrant.com
   #   service: http://localhost:8080
 
   # Catch-all rule (required — must be last).
