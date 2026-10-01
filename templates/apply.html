@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}New Application — Brightpath{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Grant Application</span>
+    <h1>Tell us about your situation</h1>
+    <p>Complete the form below. Be honest and specific — it helps our team assess your request fairly and quickly.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:760px;">
+    <div class="form-card">
+      <form method="post" class="form-grid" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="form-grid two">
+          <div class="field">
+            <label for="full_name">Full name *</label>
+            <input type="text" id="full_name" name="full_name" value="{{ user['full_name'] }}" required>
+          </div>
+          <div class="field">
+            <label for="country">Country *</label>
+            <input type="text" id="country" name="country" value="{{ user['country'] or '' }}" required>
+          </div>
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="crisis_type">Program / type of crisis *</label>
+            <select id="crisis_type" name="crisis_type" required>
+              <option value="">Select a program…</option>
+              <option>Disaster Relief</option>
+              <option>Medical Support</option>
+              <option>Education Continuity</option>
+              <option>Livelihood Recovery</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="household_size">Household size</label>
+            <input type="number" id="household_size" name="household_size" min="1" value="1">
+          </div>
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="amount_requested">Amount requested *</label>
+            <input type="number" id="amount_requested" name="amount_requested" min="1" step="1" placeholder="2000" required>
+          </div>
+          <div class="field">
+            <label for="currency">Currency</label>
+            <select id="currency" name="currency">
+              <option value="USD">USD $</option>
+              <option value="GBP">GBP £</option>
+              <option value="EUR">EUR €</option>
+              <option value="NGN">NGN ₦</option>
+              <option value="KES">KES KSh</option>
+              <option value="INR">INR ₹</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="situation">Describe your situation *</label>
+          <textarea id="situation" name="situation" placeholder="What happened, and what do you need the grant for?" required></textarea>
+          <span class="hint">Please do not include bank passwords or sensitive financial credentials.</span>
+        </div>
+        <div class="field">
+          <label for="evidence">Supporting evidence <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+          <input type="file" id="evidence" name="evidence" multiple
+                 accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.txt">
+          <span class="hint">Attach photos, letters, medical notes or official documents that support your request. Up to 25&nbsp;MB total. Accepted: PDF, images, Word or text files.</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Submit application</button>
+      </form>
+    </div>
+    <p class="form-note center mt-2">By submitting, you confirm the information is accurate. Brightpath never charges a fee to apply or to receive a grant.</p>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

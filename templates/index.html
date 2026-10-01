@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Brightpath Crisis Relief Foundation — Emergency Grants Worldwide{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      <span class="hero-badge"><span class="dot"></span> A global foundation for people in crisis</span>
+      <h1>When crisis strikes, help should not wait.</h1>
+      <p class="lead">Brightpath Crisis Relief Foundation awards emergency grants to individuals and families affected by disasters, conflict, and hardship — anywhere in the world. Apply for support, and if approved, receive funds directly into your Brightpath account.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Apply for a Grant</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('how_to_apply') }}">How it works</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>Live impact</h3>
+      <p>Real numbers from our grant records — updated as applications are reviewed and disbursed.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num" data-count="{{ stats.disbursed_sum }}" data-prefix="$">0</div>
+          <div class="lbl">Grants disbursed</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num" data-count="{{ stats.approved }}">0</div>
+          <div class="lbl">Families helped</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num" data-count="{{ stats.countries }}">0</div>
+          <div class="lbl">Countries reached</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num" data-count="{{ stats.pending }}">0</div>
+          <div class="lbl">Applications in review</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT STRIP -->
+<section class="impact-strip">
+  <div class="container">
+    <div class="grid grid-4">
+      <div class="impact-item"><div class="num" data-count="{{ stats.users }}">0</div><div class="lbl">Registered applicants</div></div>
+      <div class="impact-item"><div class="num" data-count="{{ stats.total_apps }}">0</div><div class="lbl">Applications received</div></div>
+      <div class="impact-item"><div class="num" data-count="{{ stats.disbursed_sum }}" data-prefix="$">0</div><div class="lbl">Total funds disbursed</div></div>
+      <div class="impact-item"><div class="num" data-count="{{ stats.approved }}">0</div><div class="lbl">Grants approved</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION -->
+<section class="section">
+  <div class="container split reveal">
+    <div>
+      <span class="eyebrow">Our Mission</span>
+      <h2>Direct relief, delivered with dignity and transparency.</h2>
+      <p>Brightpath exists to move money quickly and honestly to people who need it most. We focus on emergency relief: the moment a family loses a home, a livelihood, or access to medical care. Our grants are modest, targeted, and fast — because a small amount of money at the right time can change everything.</p>
+      <ul class="check-list">
+        <li><span class="tick">✓</span> <span><strong>No fee to apply.</strong> Applying for or receiving a Brightpath grant is always free. We will never ask you to pay to receive help.</span></li>
+        <li><span class="tick">✓</span> <span><strong>Transparent by design.</strong> Every approved grant and disbursement is recorded and published on our transparency page.</span></li>
+        <li><span class="tick">✓</span> <span><strong>Global reach.</strong> We accept applications from every country and review them on the same criteria.</span></li>
+      </ul>
+    </div>
+    <div>
+      <img src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=900&q=80" alt="Volunteers distributing relief supplies" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMS -->
+<section class="section" style="background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="container">
+    <div class="center reveal">
+      <span class="eyebrow">What We Fund</span>
+      <h2>Four programs, one goal: stability restored.</h2>
+      <p class="lead">Grants are awarded across four core areas of emergency need.</p>
+    </div>
+    <div class="grid grid-4 mt-3 reveal">
+      <div class="card">
+        <div class="icon">🏠</div>
+        <h3>Disaster Relief</h3>
+        <p>Emergency shelter, food, water, and essentials for families displaced by floods, fires, storms, and earthquakes.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🩺</div>
+        <h3>Medical Support</h3>
+        <p>Help covering urgent medical bills, medication, and treatment for people facing health emergencies.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎓</div>
+        <h3>Education Continuity</h3>
+        <p>Keeping children and young people in school through crisis — fees, supplies, and safe transport.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🌱</div>
+        <h3>Livelihood Recovery</h3>
+        <p>Seed funding to help families and small traders rebuild income after losing work or a business.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="container">
+    <div class="center reveal">
+      <span class="eyebrow">How It Works</span>
+      <h2>From application to grant in four clear steps.</h2>
+    </div>
+    <div class="steps mt-3">
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div><h3>Create your free account</h3><p>Register in under a minute with your name, email, and country. There is no cost and no obligation.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div><h3>Submit your application</h3><p>Tell us about your situation, the type of crisis, and the amount you need. Everything is stored securely.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div><h3>We review it</h3><p>Our review team assesses each application against published eligibility criteria and available funds.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num"></div>
+        <div><h3>Receive your grant</h3><p>Approved applicants are issued a member account number and routing number. Funds are deposited into that account, with a receipt and a notification every step of the way.</p></div>
+      </div>
+    </div>
+    <div class="center mt-3">
+      <a class="btn btn-dark btn-lg" href="{{ url_for('how_to_apply') }}">Read the full guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSPARENCY TEASER -->
+<section class="section" style="background:#fff; border-top:1px solid var(--line);">
+  <div class="container split reveal">
+    <div>
+      <img src="https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?auto=format&fit=crop&w=900&q=80" alt="Community members working together" loading="lazy">
+    </div>
+    <div>
+      <span class="eyebrow">Accountability</span>
+      <h2>You can see exactly where the money goes.</h2>
+      <p>Trust is the currency of charity. That is why we publish our approved grants and disbursements openly, and why we will never require a payment from anyone seeking help. Our commitment is simple: every dollar is traceable, and every applicant is treated with respect.</p>
+      <div class="grid grid-2 mt-2">
+        <div class="card stat-card"><div class="num" data-count="{{ stats.approved }}">0</div><div class="lbl">Grants approved</div></div>
+        <div class="card stat-card"><div class="num" data-count="{{ stats.disbursed_sum }}" data-prefix="$">0</div><div class="lbl">Total disbursed</div></div>
+      </div>
+      <a class="btn btn-dark mt-2" href="{{ url_for('transparency') }}">View the transparency report</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <h2>Be part of someone's turning point.</h2>
+      <p>If you are facing a crisis, Brightpath is built to help. Create a free account and submit your application — it takes only a few minutes.</p>
+      <div class="hero-cta" style="justify-content:center;">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Apply for a Grant</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('faq') }}">Read the FAQ</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

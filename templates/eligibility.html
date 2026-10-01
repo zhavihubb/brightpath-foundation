@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Eligibility — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Eligibility</span>
+    <h1>Who can apply for a Brightpath grant?</h1>
+    <p>We keep our criteria simple and fair so that people in genuine need can access help quickly.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="icon" style="background:rgba(47,158,99,.15);">✅</div>
+        <h3>You are likely eligible if you:</h3>
+        <ul class="check-list">
+          <li><span class="tick">✓</span> <span>Are 18 years or older.</span></li>
+          <li><span class="tick">✓</span> <span>Are experiencing a genuine crisis — disaster, medical emergency, loss of income, or interruption to a child's education.</span></li>
+          <li><span class="tick">✓</span> <span>Live in any country in the world. There is no geographic restriction.</span></li>
+          <li><span class="tick">✓</span> <span>Can describe your situation clearly and truthfully.</span></li>
+          <li><span class="tick">✓</span> <span>Have not already received a Brightpath grant for the same event.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="icon" style="background:rgba(214,69,69,.13);">⛔</div>
+        <h3>You are not eligible if:</h3>
+        <ul class="check-list">
+          <li><span class="tick" style="background:rgba(214,69,69,.15); color:var(--red);">✕</span> <span>The request is for a commercial investment, gambling, or a for-profit venture.</span></li>
+          <li><span class="tick" style="background:rgba(214,69,69,.15); color:var(--red);">✕</span> <span>The information provided is false or misleading.</span></li>
+          <li><span class="tick" style="background:rgba(214,69,69,.15); color:var(--red);">✕</span> <span>You are applying on behalf of a business rather than a person or household.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>How applications are reviewed</h2>
+    <p class="lead">Every application is reviewed by our team against three questions: <strong>Is the need genuine? Is it urgent? Can our available funds meet it?</strong> Applications are assessed in the order received, with priority given to life-threatening and disaster-related situations.</p>
+    <div class="grid grid-3 mt-3">
+      <div class="card stat-card"><div class="num">1–3</div><div class="lbl">Business days to first review</div></div>
+      <div class="card stat-card"><div class="num">100%</div><div class="lbl">Free to apply</div></div>
+      <div class="card stat-card"><div class="num">All</div><div class="lbl">Countries accepted</div></div>
+    </div>
+    <div class="center mt-3">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Check by applying</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

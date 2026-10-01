@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# The member application runs on a separate host (see DEPLOYMENT.md).
+Sitemap: https://www.brightpath.org/sitemap.xml

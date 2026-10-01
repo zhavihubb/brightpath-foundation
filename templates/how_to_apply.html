@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}How to Apply — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">How to Apply</span>
+    <h1>Applying takes minutes. It is always free.</h1>
+    <p>Follow these steps to submit a grant application. You can track the status of every application from your personal dashboard.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="steps">
+      <div class="step"><div class="step-num"></div>
+        <div><h3>Create a free account</h3><p>Register with your full name, email, and country. You will use this account to apply and to check your status. Registration is free and takes under a minute.</p></div>
+      </div>
+      <div class="step"><div class="step-num"></div>
+        <div><h3>Open a new application</h3><p>From your dashboard, choose "New application". Select the program that fits your situation — disaster relief, medical support, education continuity, or livelihood recovery.</p></div>
+      </div>
+      <div class="step"><div class="step-num"></div>
+        <div><h3>Describe your situation</h3><p>Tell us, in your own words, what happened and what you need. Enter the amount you are requesting and your household size. Be honest and specific — it helps us help you.</p></div>
+      </div>
+      <div class="step"><div class="step-num"></div>
+        <div><h3>Submit and track</h3><p>Once submitted, your application status begins as "Submitted". Our review team then moves it to "Under Review" and finally to "Approved" or "Declined". You will see every change in your dashboard.</p></div>
+      </div>
+      <div class="step"><div class="step-num"></div>
+        <div><h3>Receive your grant</h3><p>Approved applicants are notified in the dashboard with the awarded amount. Funds are disbursed through a verified channel. You will never be asked to pay a fee to receive your grant.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff; border-top:1px solid var(--line);">
+  <div class="container">
+    <div class="grid grid-2">
+      <div>
+        <h2>What you'll need</h2>
+        <ul class="check-list">
+          <li><span class="tick">✓</span> <span>A valid email address you can access.</span></li>
+          <li><span class="tick">✓</span> <span>Your country of residence.</span></li>
+          <li><span class="tick">✓</span> <span>A short description of your situation.</span></li>
+          <li><span class="tick">✓</span> <span>The amount you are requesting and why.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="card" style="border-left:4px solid var(--amber);">
+          <h3>⚠️ A word about safety</h3>
+          <p>Brightpath will <strong>never</strong> ask you to pay a fee, send money, or share bank passwords to receive a grant. If anyone claiming to be from Brightpath asks for payment, it is a scam. Report it through our contact page immediately.</p>
+        </div>
+      </div>
+    </div>
+    <div class="center mt-3">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Create your account</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

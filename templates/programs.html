@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Programs — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Our Programs</span>
+    <h1>Four programs. One purpose: get people back on their feet.</h1>
+    <p>Every Brightpath grant falls under one of four programs. Together they cover the emergency needs that most often push a family into lasting hardship.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid grid-2">
+    <div class="card">
+      <div class="icon">🏠</div>
+      <h3>Disaster Relief</h3>
+      <p>For people displaced or affected by natural disasters — floods, fires, storms, earthquakes, and landslides. Grants help cover emergency shelter, food, clean water, clothing, and essential household items during the immediate aftermath and early recovery.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🩺</div>
+      <h3>Medical Support</h3>
+      <p>For people facing urgent health emergencies. Grants help with treatment costs, essential medication, emergency transport, and post-surgery care for those who cannot cover these costs themselves.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h3>Education Continuity</h3>
+      <p>For children and young people at risk of dropping out because of crisis. Grants support school fees, uniforms, books, and safe transport so that education is not another casualty of hardship.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🌱</div>
+      <h3>Livelihood Recovery</h3>
+      <p>For families and small traders who have lost their income. Grants provide seed capital to restart a small business, replace essential tools, or bridge the gap until work resumes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff; border-top:1px solid var(--line);">
+  <div class="container">
+    <div class="center">
+      <span class="eyebrow">Grant Range</span>
+      <h2>How much can I request?</h2>
+      <p class="lead">Brightpath grants are intentionally modest so that we can help more people. Most awards fall between $200 and $5,000 (or the equivalent in your local currency), depending on the crisis and available funds.</p>
+    </div>
+    <div class="grid grid-3 mt-3">
+      <div class="card stat-card"><div class="num">$200</div><div class="lbl">Typical minimum grant</div></div>
+      <div class="card stat-card"><div class="num">$2,000</div><div class="lbl">Average grant awarded</div></div>
+      <div class="card stat-card"><div class="num">$5,000</div><div class="lbl">Maximum grant (case by case)</div></div>
+    </div>
+    <div class="center mt-3">
+      <a class="btn btn-dark btn-lg" href="{{ url_for('register') }}">Start your application</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

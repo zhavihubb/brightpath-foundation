@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Receipt {{ tx['reference'] }} — Brightpath{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width:720px;">
+    <div class="receipt-actions no-print">
+      <a class="btn btn-light" href="{{ url_for('transactions') }}">← Back to transactions</a>
+      <button type="button" class="btn btn-primary" onclick="window.print()">🖨 Print / Save PDF</button>
+    </div>
+
+    <div class="receipt" id="receipt">
+      <div class="receipt-head">
+        <div class="receipt-brand">
+          <span class="brand-mark">✦</span>
+          <div>
+            <div class="receipt-brand-name">{{ s.foundation_name }}</div>
+            <div class="receipt-brand-sub">{{ s.foundation_address }}</div>
+          </div>
+        </div>
+        <div class="receipt-status">
+          <span class="badge badge-{{ tx['status'] }}">{{ tx['status']|statuslabel }}</span>
+        </div>
+      </div>
+
+      <div class="receipt-title">
+        <h1>{{ 'Withdrawal' if tx['type']=='withdrawal' else 'Deposit' }} Receipt</h1>
+        <p>Official record of funds {{ 'withdrawn from' if tx['type']=='withdrawal' else 'deposited into' }} your Brightpath member account.</p>
+      </div>
+
+      <div class="receipt-amount">
+        <span class="receipt-amount-label">Amount {{ 'withdrawn' if tx['type']=='withdrawal' else 'deposited' }}</span>
+        <div class="receipt-amount-value">{{ tx['currency'] }} {{ tx['amount']|money }}</div>
+      </div>
+
+      <div class="receipt-grid">
+        <div class="receipt-row"><span>Reference</span><strong><code>{{ tx['reference'] }}</code></strong></div>
+        <div class="receipt-row"><span>Date</span><strong>{{ tx['created_at']|datetimefmt }}</strong></div>
+        <div class="receipt-row"><span>Type</span><strong>{{ tx['type']|capitalize }}</strong></div>
+        <div class="receipt-row"><span>Status</span><strong>{{ tx['status']|statuslabel }}</strong></div>
+        <div class="receipt-row"><span>Description</span><strong>{{ tx['description'] }}</strong></div>
+        {% if tx['reviewed_at'] %}<div class="receipt-row"><span>Reviewed</span><strong>{{ tx['reviewed_at']|datetimefmt }}</strong></div>{% endif %}
+      </div>
+
+      {% if tx['type'] == 'withdrawal' %}
+      <div class="receipt-section">
+        <h3>Withdrawal details</h3>
+        <div class="receipt-grid">
+          <div class="receipt-row"><span>Method</span><strong>{{ tx['method'] or '—' }}</strong></div>
+          {% if tx['network'] %}<div class="receipt-row"><span>Network</span><strong>{{ tx['network'] }}</strong></div>{% endif %}
+          <div class="receipt-row"><span>Destination</span><strong><code class="dest-code">{{ tx['destination'] or '—' }}</code></strong></div>
+        </div>
+      </div>
+      {% else %}
+      <div class="receipt-section">
+        <h3>Sender (official designated account)</h3>
+        <div class="receipt-grid">
+          <div class="receipt-row"><span>Account name</span><strong>{{ tx['sender_name'] or s.foundation_name }}</strong></div>
+          <div class="receipt-row"><span>Account number</span><strong><code>{{ tx['sender_account'] or s.foundation_account_number }}</code></strong></div>
+          <div class="receipt-row"><span>Routing number</span><strong><code>{{ tx['sender_routing'] or s.foundation_routing_number }}</code></strong></div>
+          <div class="receipt-row"><span>Bank</span><strong>{{ s.foundation_bank }}</strong></div>
+          <div class="receipt-row"><span>SWIFT / BIC</span><strong>{{ s.foundation_swift }}</strong></div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="receipt-section">
+        <h3>Recipient</h3>
+        <div class="receipt-grid">
+          <div class="receipt-row"><span>Account holder</span><strong>{{ owner['full_name'] }}</strong></div>
+          <div class="receipt-row"><span>Account number</span><strong><code>{{ owner['account_number'] or '—' }}</code></strong></div>
+          <div class="receipt-row"><span>Routing number</span><strong><code>{{ owner['routing_number'] or '—' }}</code></strong></div>
+          <div class="receipt-row"><span>Email</span><strong>{{ owner['email'] }}</strong></div>
+        </div>
+      </div>
+
+      {% if tx['status'] in ['rejected','reversed'] %}
+      <div class="receipt-section receipt-alert">
+        <h3>{{ 'Reversal notice' if tx['status']=='reversed' else 'Decline notice' }}</h3>
+        <div class="receipt-grid">
+          <div class="receipt-row"><span>Reason</span><strong>{{ tx['reason'] or 'No reason provided.' }}</strong></div>
+          {% if tx['instructions'] %}<div class="receipt-row"><span>What to do next</span><strong>{{ tx['instructions'] }}</strong></div>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="receipt-foot">
+        <p>This receipt was generated automatically by {{ s.foundation_name }}. Brightpath never charges applicants a fee. If you did not expect this transaction, please contact us at {{ s.support_email }}.</p>
+        <p class="receipt-ref">Receipt ID: BP-RCPT-{{ '%06d' % tx['id'] }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

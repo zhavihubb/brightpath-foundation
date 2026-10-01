@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Review dashboard</h1>
+    <p>Review applications, manage member accounts, push funds, and monitor foundation activity.</p>
+    <div class="dash-actions">
+      <a class="btn btn-primary" href="{{ url_for('admin_approvals') }}">Approvals{% if stats.pending_tx %} <span class="nav-badge">{{ stats.pending_tx }}</span>{% endif %}</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_users') }}">Members &amp; accounts</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_transactions') }}">Transactions &amp; deposits</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_support') }}">Support inbox{% if stats.open_threads %} <span class="nav-badge">{{ stats.open_threads }}</span>{% endif %}</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_messages') }}">Messages &amp; shout-outs</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_settings') }}">Settings</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-4">
+      <div class="card stat-card"><div class="num">{{ stats.total_apps }}</div><div class="lbl">Total applications</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.pending }}</div><div class="lbl">Awaiting review</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.approved }}</div><div class="lbl">Approved</div></div>
+      <div class="card stat-card"><div class="num">${{ stats.disbursed_sum|money }}</div><div class="lbl">Total disbursed</div></div>
+    </div>
+    <div class="grid grid-4 mt-2">
+      <div class="card stat-card"><div class="num">{{ stats.users }}</div><div class="lbl">Registered members</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.active_accounts }}</div><div class="lbl">Active accounts</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.pending_tx }}</div><div class="lbl">Pending approvals</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.open_threads }}</div><div class="lbl">Open support chats</div></div>
+    </div>
+    <div class="grid grid-4 mt-2">
+      <div class="card stat-card"><div class="num">${{ stats.withdrawn_sum|money }}</div><div class="lbl">Total withdrawn</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.countries }}</div><div class="lbl">Countries served</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.declined }}</div><div class="lbl">Declined applications</div></div>
+      <div class="card stat-card"><div class="num">{{ stats.pending }}</div><div class="lbl">Applications awaiting review</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2 id="applications">Applications</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Applicant</th><th>Country</th><th>Program</th><th>Requested</th><th>Status</th><th>Decision</th></tr>
+        </thead>
+        <tbody>
+          {% for a in apps %}
+          <tr>
+            <td>#{{ a['id'] }}</td>
+            <td>{{ a['full_name'] }}<br><span style="font-size:.8rem;color:var(--muted);">{{ a['user_email'] }}</span>{% if a['user_account'] %}<br><span style="font-size:.8rem;color:var(--muted);">Acct {{ a['user_account'] }}</span>{% endif %}</td>
+            <td>{{ a['country'] }}</td>
+            <td>{{ a['crisis_type'] }}</td>
+            <td>{{ a['currency'] }} {{ a['amount_requested']|money }}</td>
+            <td><span class="badge badge-{{ a['status'] }}">{{ a['status']|statuslabel }}</span></td>
+            <td>
+              <form method="post" action="{{ url_for('admin_review', app_id=a['id']) }}" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="decision" style="padding:6px 8px; border-radius:8px; border:1.5px solid var(--line); font-size:.82rem;">
+                  <option value="submitted" {% if a['status']=='submitted' %}selected{% endif %}>Submitted</option>
+                  <option value="under_review" {% if a['status']=='under_review' %}selected{% endif %}>Under Review</option>
+                  <option value="approved" {% if a['status']=='approved' %}selected{% endif %}>Approved</option>
+                  <option value="declined" {% if a['status']=='declined' %}selected{% endif %}>Declined</option>
+                </select>
+                <input type="number" name="awarded_amount" placeholder="Award" value="{{ a['awarded_amount'] or '' }}" style="width:90px; padding:6px 8px; border-radius:8px; border:1.5px solid var(--line); font-size:.82rem;">
+                <input type="text" name="admin_notes" placeholder="Note" value="{{ a['admin_notes'] or '' }}" style="width:120px; padding:6px 8px; border-radius:8px; border:1.5px solid var(--line); font-size:.82rem;">
+                <button type="submit" class="btn btn-primary" style="padding:6px 14px; font-size:.8rem;">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">No applications yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="form-note mt-1">Approving an application automatically issues the member an account number and routing number and notifies them by email and dashboard.</p>
+
+    <div class="divider"></div>
+
+    <h2 id="contacts">Recent contact messages</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for m in messages %}
+          <tr>
+            <td>{{ m['name'] }}</td>
+            <td>{{ m['email'] }}</td>
+            <td>{{ m['subject'] or '—' }}</td>
+            <td>{{ m['message'][:80] }}{% if m['message']|length > 80 %}…{% endif %}</td>
+            <td>{{ m['created_at']|datefmt }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">No messages yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Uploaded evidence</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>#</th><th>Application</th><th>File</th><th>Size</th><th>Uploaded</th><th>Download</th></tr></thead>
+        <tbody>
+          {% for f in files %}
+          <tr>
+            <td>{{ f['id'] }}</td>
+            <td>#{{ f['application_id'] }}</td>
+            <td>{{ f['original_name'] }}</td>
+            <td>{{ f['size']|filesize }}</td>
+            <td>{{ f['uploaded_at']|datefmt }}</td>
+            <td><a class="btn btn-light" style="padding:4px 12px; font-size:.78rem;" href="{{ url_for('download_file', stored_name=f['stored_name']) }}">Download</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">No files uploaded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Notification email log</h2>
+    <p class="form-note" style="margin-top:6px;">Every notification the platform sends is recorded here. When SMTP is not configured, emails are logged in "logged" mode instead of delivered.</p>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>#</th><th>To</th><th>Subject</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for e in emails %}
+          <tr>
+            <td>{{ e['id'] }}</td>
+            <td>{{ e['to_email'] }}</td>
+            <td>{{ e['subject'] }}</td>
+            <td><span class="badge badge-{{ 'approved' if e['status']=='sent' else 'under_review' }}">{{ e['status'] }}</span></td>
+            <td>{{ e['created_at']|datefmt }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">No emails logged yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Export data</h2>
+    <p class="form-note" style="margin-top:6px;">Download CSV exports for reporting and record-keeping.</p>
+    <div class="dash-actions mt-2">
+      <a class="btn btn-light" href="{{ url_for('admin_export', kind='applications') }}">Applications CSV</a>
+      <a class="btn btn-light" href="{{ url_for('admin_export', kind='users') }}">Members CSV</a>
+      <a class="btn btn-light" href="{{ url_for('admin_export', kind='transactions') }}">Transactions CSV</a>
+      <a class="btn btn-light" href="{{ url_for('admin_export', kind='contacts') }}">Contacts CSV</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

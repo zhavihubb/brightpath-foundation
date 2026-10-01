@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Foundation Settings — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Foundation settings</h1>
+    <p>Configure the official designated sender account and manage the withdrawal methods and wallets members can use.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_transactions') }}">Transactions</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_approvals') }}">Approvals</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:920px;">
+    <!-- SENDER DETAILS -->
+    <div class="form-card">
+      <h2>Official sender account details</h2>
+      <p class="form-note" style="margin-top:6px;">These values appear on every receipt and in every deposit notification as the sender.</p>
+      <form method="post" class="form-grid mt-2">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="form_action" value="sender">
+        <div class="field">
+          <label for="foundation_name">Foundation / account name</label>
+          <input type="text" id="foundation_name" name="foundation_name" value="{{ settings.foundation_name }}">
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="foundation_account_number">Account number</label>
+            <input type="text" id="foundation_account_number" name="foundation_account_number" value="{{ settings.foundation_account_number }}">
+          </div>
+          <div class="field">
+            <label for="foundation_routing_number">Routing number</label>
+            <input type="text" id="foundation_routing_number" name="foundation_routing_number" value="{{ settings.foundation_routing_number }}">
+          </div>
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="foundation_bank">Bank name</label>
+            <input type="text" id="foundation_bank" name="foundation_bank" value="{{ settings.foundation_bank }}">
+          </div>
+          <div class="field">
+            <label for="foundation_swift">SWIFT / BIC</label>
+            <input type="text" id="foundation_swift" name="foundation_swift" value="{{ settings.foundation_swift }}">
+          </div>
+        </div>
+        <div class="field">
+          <label for="foundation_address">Foundation address</label>
+          <input type="text" id="foundation_address" name="foundation_address" value="{{ settings.foundation_address }}">
+        </div>
+        <div class="field">
+          <label for="support_email">Support email</label>
+          <input type="email" id="support_email" name="support_email" value="{{ settings.support_email }}">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save settings</button>
+      </form>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- WITHDRAWAL METHODS / WALLETS -->
+    <div class="form-card">
+      <h2>Withdrawal methods &amp; wallets</h2>
+      <p class="form-note" style="margin-top:6px;">These methods appear on every member's withdrawal page. Members can copy the wallet/account details you enter here. Leave a method's name blank to delete it, or uncheck "Enabled" to hide it from members.</p>
+      <form method="post" class="mt-2" id="methodsForm">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="form_action" value="methods">
+
+        <div class="method-editor-head">
+          <span>Method</span><span>Type</span><span>Network</span><span>Wallet / account</span><span>Instructions</span><span>On</span><span></span>
+        </div>
+        <div id="methodRows">
+          {% for m in methods %}
+          <div class="method-row">
+            <input type="hidden" name="m_id" value="{{ m['id'] }}">
+            <input type="text" name="m_name" value="{{ m['name'] }}" placeholder="e.g. Bitcoin (BTC)">
+            <select name="m_type">
+              <option value="crypto" {% if m['type']=='crypto' %}selected{% endif %}>Crypto</option>
+              <option value="bank" {% if m['type']=='bank' %}selected{% endif %}>Bank</option>
+              <option value="wallet" {% if m['type']=='wallet' %}selected{% endif %}>Wallet</option>
+            </select>
+            <input type="text" name="m_network" value="{{ m['network'] }}" placeholder="e.g. Tron (TRC20)">
+            <input type="text" name="m_address" value="{{ m['address'] }}" placeholder="Wallet address / account no.">
+            <input type="text" name="m_instructions" value="{{ m['instructions'] }}" placeholder="Guidance shown to members">
+            <label class="switch" title="Enabled">
+              <input type="checkbox" name="m_enabled" value="1" {% if m['enabled'] %}checked{% endif %}>
+              <span class="switch-slider"></span>
+            </label>
+            <button type="button" class="btn btn-light btn-sm method-remove" title="Remove">✕</button>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="method-editor-foot">
+          <button type="button" class="btn btn-light btn-sm" id="addMethod">+ Add method</button>
+          <button type="submit" class="btn btn-primary">Save withdrawal methods</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- FIRST DEPOSIT NOTICE (dashboard write-up) -->
+    <div class="form-card">
+      <h2>First-deposit notice (dashboard write-up)</h2>
+      <p class="form-note" style="margin-top:6px;">This professional write-up is shown on every member&rsquo;s dashboard and on the withdrawal page. It explains that cryptocurrency is the first and only accepted method for a first deposit, and that all other payment and withdrawal methods unlock automatically afterwards. Write one paragraph per line; start a line with &ldquo;- &rdquo; to make a bullet point.</p>
+      <form method="post" class="form-grid mt-2">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="form_action" value="notice">
+        <div class="field">
+          <label for="first_deposit_notice_title">Notice title</label>
+          <input type="text" id="first_deposit_notice_title" name="first_deposit_notice_title" value="{{ notice.title }}">
+        </div>
+        <div class="field">
+          <label for="first_deposit_notice_body">Notice body</label>
+          <textarea id="first_deposit_notice_body" name="first_deposit_notice_body" style="min-height:300px;">{{ notice.body }}</textarea>
+          <span class="hint">Displayed as the professional write-up on the member dashboard.</span>
+        </div>
+        <label class="switch-row">
+          <span class="switch">
+            <input type="checkbox" name="first_deposit_notice_enabled" value="1" {% if notice.enabled %}checked{% endif %}>
+            <span class="switch-slider"></span>
+          </span>
+          <span>Show this notice on member dashboards</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Save first-deposit notice</button>
+      </form>
+    </div>
+
+    <div class="card mt-3">
+      <div class="icon">ℹ️</div>
+      <h3>How notifications work</h3>
+      <p>Every deposit, withdrawal, application decision, and support reply generates both an in-app dashboard notification and an email. When SMTP is not configured, emails are recorded in the email log (visible on the review dashboard) in "logged" mode so nothing is lost.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('addMethod').addEventListener('click', function () {
+    var rows = document.getElementById('methodRows');
+    var row = document.createElement('div');
+    row.className = 'method-row';
+    row.innerHTML =
+      '<input type="hidden" name="m_id" value="">' +
+      '<input type="text" name="m_name" placeholder="e.g. Litecoin (LTC)">' +
+      '<select name="m_type"><option value="crypto">Crypto</option><option value="bank">Bank</option><option value="wallet">Wallet</option></select>' +
+      '<input type="text" name="m_network" placeholder="e.g. Litecoin">' +
+      '<input type="text" name="m_address" placeholder="Wallet address / account no.">' +
+      '<input type="text" name="m_instructions" placeholder="Guidance shown to members">' +
+      '<label class="switch" title="Enabled"><input type="checkbox" name="m_enabled" value="1" checked><span class="switch-slider"></span></label>' +
+      '<button type="button" class="btn btn-light btn-sm method-remove" title="Remove">✕</button>';
+    rows.appendChild(row);
+  });
+  document.getElementById('methodRows').addEventListener('click', function (e) {
+    if (e.target.classList.contains('method-remove')) {
+      e.target.closest('.method-row').remove();
+    }
+  });
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+# Cloudflare Tunnel configuration (locally-managed tunnel)
+#
+# Use this if you run `cloudflared` yourself instead of the token-based
+# docker-compose service. Replace the placeholders, then:
+#
+#   cloudflared tunnel login
+#   cloudflared tunnel create brightpath
+#   cloudflared tunnel route dns brightpath app.your-domain.com
+#   cloudflared tunnel --config deploy/cloudflared/config.yml run
+#
+# The tunnel makes an OUTBOUND connection to Cloudflare, so you never need to
+# open inbound ports or expose your server's IP.
+# ---------------------------------------------------------------------------
+tunnel: REPLACE_WITH_TUNNEL_ID
+credentials-file: /etc/cloudflared/REPLACE_WITH_TUNNEL_ID.json
+
+ingress:
+  # The Brightpath Flask app (gunicorn on port 8080).
+  - hostname: app.your-domain.com
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Optional: also serve the apex/www through the same app.
+  # - hostname: www.your-domain.com
+  #   service: http://localhost:8080
+
+  # Catch-all rule (required — must be last).
+  - service: http_status:404

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ thread['subject'] }} — Support — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">
+      {{ 'Support inbox' if is_admin else 'Support chat' }}
+    </span>
+    <h1>{{ thread['subject'] }}</h1>
+    <p>
+      {% if is_admin %}
+        Conversation with {{ owner['full_name'] }} ({{ owner['email'] }})
+      {% else %}
+        Conversation with the Brightpath support team
+      {% endif %}
+      · <span class="badge badge-{{ 'approved' if thread['status']=='open' else 'declined' }}">{{ thread['status']|capitalize }}</span>
+    </p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin_support') if is_admin else url_for('support') }}">← All conversations</a>
+      {% if is_admin %}<a class="btn btn-outline" href="{{ url_for('admin_users') }}">Members</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:860px;">
+    <div class="chat" id="chat">
+      <div class="chat-stream" id="chatStream">
+        {% for m in messages %}
+        {% set mine = (m['sender_role'] == 'admin' and is_admin) or (m['sender_role'] != 'admin' and not is_admin) %}
+        <div class="chat-msg {{ 'chat-mine' if mine else 'chat-theirs' }}">
+          <div class="chat-bubble">
+            {% if m['body'] %}<div class="chat-text">{{ m['body'] }}</div>{% endif %}
+            {% if m['attachment_stored'] %}
+            <a class="chat-attach" href="{{ url_for('support_attachment', stored_name=m['attachment_stored']) }}" target="_blank" rel="noopener">
+              {% set ext = m['attachment_original'].rsplit('.',1)[-1]|lower %}
+              {% if ext in ['png','jpg','jpeg','gif','webp'] %}
+                <img src="{{ url_for('support_attachment', stored_name=m['attachment_stored']) }}" alt="{{ m['attachment_original'] }}" loading="lazy">
+              {% else %}
+                <span class="chat-file">📎 {{ m['attachment_original'] }} <span class="chat-file-size">{{ m['attachment_size']|filesize }}</span></span>
+              {% endif %}
+            </a>
+            {% endif %}
+            <div class="chat-meta">
+              <span>{{ 'You' if mine else (owner['full_name'] if is_admin else 'Brightpath Support') }}</span>
+              <span>{{ m['created_at']|datetimefmt }}</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="chat-empty">No messages yet. Say hello 👋</div>
+        {% endfor %}
+      </div>
+
+      <form method="post" class="chat-form" enctype="multipart/form-data" id="chatForm">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="chat-input-row">
+          <textarea name="body" id="chatInput" placeholder="Type your message…" rows="1"></textarea>
+          <label class="chat-attach-btn" title="Attach an image or file">
+            📎<input type="file" name="attachment" id="chatAttachment" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.txt,.doc,.docx" hidden>
+          </label>
+          <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+        <div class="chat-attach-preview" id="attachPreview" hidden></div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

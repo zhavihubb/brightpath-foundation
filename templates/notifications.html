@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <h1>Notifications</h1>
+    <p>Every activity on your account is recorded here — and emailed to you for your records.</p>
+    <div class="dash-actions">
+      <form method="post" action="{{ url_for('notifications_read') }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline">Mark all as read</button>
+      </form>
+      <a class="btn btn-outline" href="{{ url_for('dashboard') }}">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:820px;">
+    <div class="note-list">
+      {% for n in notes %}
+      <div class="note-item note-card {% if not n['is_read'] %}note-unread{% endif %}">
+        <div class="note-icon note-icon-{{ n['category'] }}">
+          {% if n['category'] == 'transaction' %}💵
+          {% elif n['category'] == 'support' %}💬
+          {% elif n['category'] == 'application' %}📝
+          {% elif n['category'] == 'security' %}🔐
+          {% elif n['category'] == 'message' %}&#x1F4E3;
+          {% else %}🔔{% endif %}
+        </div>
+        <div class="note-main">
+          <div class="note-title">{{ n['title'] }}
+            {% if not n['is_read'] %}<span class="pill pill-new">New</span>{% endif %}
+          </div>
+          <div class="note-body">{{ n['body'] }}</div>
+          <div class="note-time">{{ n['created_at']|datetimefmt }}</div>
+        </div>
+        {% if n['link'] %}
+        <a class="btn btn-light btn-sm" href="{{ n['link'] }}">Open</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="card center" style="padding:48px;">
+        <div class="icon" style="margin:0 auto 16px;">🔔</div>
+        <h3>No notifications yet</h3>
+        <p>When there's activity on your account — a deposit, an application update, or a support reply — you'll see it here and receive an email.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

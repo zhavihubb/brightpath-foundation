@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Members & Accounts — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Members &amp; accounts</h1>
+    <p>Every registered member, their account number, routing number, balance, first-deposit status, and account status.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_transactions') }}">Transactions &amp; deposits</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_messages') }}">Messages &amp; shout-outs</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_support') }}">Support inbox</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Member</th><th>Country</th><th>Account no.</th><th>Routing no.</th><th>Balance</th><th>First deposit</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u['id'] }}</td>
+            <td>{{ u['full_name'] }}<br><span style="font-size:.8rem;color:var(--muted);">{{ u['email'] }}</span>{% if u['phone'] %}<br><span style="font-size:.8rem;color:var(--muted);">{{ u['phone'] }}</span>{% endif %}</td>
+            <td>{{ u['country'] or '—' }}</td>
+            <td>{% if u['account_number'] %}<code>{{ u['account_number'] }}</code>{% else %}<span class="muted-note">not issued</span>{% endif %}</td>
+            <td>{% if u['routing_number'] %}<code>{{ u['routing_number'] }}</code>{% else %}—{% endif %}</td>
+            <td><strong>{{ u['currency'] }} {{ u['balance']|money }}</strong></td>
+            <td>
+              {% if first_deposit.get(u['id']) %}
+                <span class="badge badge-approved">&#x2705; Confirmed</span>
+                {% if u['first_deposit_at'] %}<br><span style="font-size:.76rem;color:var(--muted);">{{ u['first_deposit_at']|datetimefmt }}</span>{% endif %}
+              {% else %}
+                <span class="badge badge-pending">&#x1F512; Pending</span>
+                <form method="post" action="{{ url_for('admin_verify_deposit', user_id=u['id']) }}" style="margin-top:8px;">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-light btn-xs">Verify first deposit</button>
+                </form>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge badge-{{ 'approved' if u['account_status']=='active' else 'under_review' }}">
+                {{ 'Active' if u['account_status']=='active' else 'Pending' }}
+              </span>
+            </td>
+            <td>
+              {% if u['account_status'] != 'active' %}
+              <form method="post" action="{{ url_for('admin_activate_user', user_id=u['id']) }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary btn-sm">Activate &amp; issue account</button>
+              </form>
+              {% else %}
+              <span class="muted-note">Active</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9">No members registered yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="form-note mt-2">Activating a member issues a unique account number and routing number and notifies them by email and dashboard notification. Approved applications are activated automatically. A member's first deposit is confirmed automatically when a deposit is completed, or you can confirm it manually with <strong>Verify first deposit</strong> — this unlocks every payment and withdrawal method for them.</p>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

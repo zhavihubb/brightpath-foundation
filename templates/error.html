@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} — Brightpath{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container center" style="max-width:620px; padding:80px 0;">
+    <div class="error-code">{{ code }}</div>
+    <h1 style="margin-top:8px;">{{ message }}</h1>
+    <p class="lead" style="font-size:1rem;">
+      {% if code == 404 %}The page you're looking for may have moved or no longer exists.
+      {% elif code == 403 %}You don't have permission to view this page. If you believe this is a mistake, contact support.
+      {% elif code == 413 %}The file you tried to upload is too large. The limit is 25 MB per upload.
+      {% else %}Please try again. If the problem continues, our support team is here to help.{% endif %}
+    </p>
+    <div class="hero-cta" style="justify-content:center; margin-top:24px;">
+      <a class="btn btn-primary" href="{{ url_for('index') }}">Back to home</a>
+      <a class="btn btn-outline" href="{{ url_for('support') }}">Contact support</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

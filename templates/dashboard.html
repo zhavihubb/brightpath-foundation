@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <h1>Welcome, {{ current_user['full_name'].split()[0] }} 👋</h1>
+    <p>Manage your grant applications, member account, withdrawals, and support chats in one place.</p>
+    <div class="dash-actions">
+      <a class="btn btn-primary" href="{{ url_for('withdraw') }}">↑ Withdraw funds</a>
+      <a class="btn btn-outline" href="{{ url_for('apply') }}">+ New application</a>
+      <a class="btn btn-outline" href="{{ url_for('account') }}">My account</a>
+      <a class="btn btn-outline" href="{{ url_for('support') }}">Support chat{% if unread_threads %} <span class="nav-badge">{{ unread_threads }}</span>{% endif %}</a>
+    </div>
+  </div>
+</section>
+
+<!-- FIRST DEPOSIT POLICY — PROFESSIONAL NOTICE -->
+{% if notice and notice.enabled %}
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="notice-card {% if first_deposit_complete %}notice-unlocked{% else %}notice-locked{% endif %}">
+      <div class="notice-head">
+        <div class="notice-icon">{% if first_deposit_complete %}&#x2705;{% else %}&#x1F510;{% endif %}</div>
+        <div class="notice-head-text">
+          <h2>{{ notice.title }}</h2>
+          <span class="notice-status">
+            {% if first_deposit_complete %}
+              <span class="badge badge-approved">First deposit confirmed &mdash; all methods unlocked</span>
+            {% else %}
+              <span class="badge badge-pending">First deposit pending &mdash; cryptocurrency required</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="notice-body">
+        {% for p in notice.paragraphs %}
+          {% if p.startswith('- ') %}
+            <p class="notice-li">{{ p[2:] }}</p>
+          {% else %}
+            <p>{{ p }}</p>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="notice-foot">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('withdraw') }}">View payment &amp; withdrawal methods</a>
+        <a class="btn btn-light btn-sm" href="{{ url_for('support') }}">Contact support</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- MESSAGES FROM THE FOUNDATION -->
+{% if messages %}
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-head-row">
+      <div>
+        <h2>Messages from the foundation</h2>
+        <p class="form-note" style="margin-top:6px;">Shout-outs and updates sent to you by the Brightpath team.</p>
+      </div>
+      <a class="btn btn-light btn-sm" href="{{ url_for('notifications') }}">All notifications</a>
+    </div>
+    <div class="message-grid mt-2">
+      {% for m in messages %}
+      <div class="message-card">
+        <div class="message-icon">&#x1F4E3;</div>
+        <div class="message-main">
+          <div class="message-title">{{ m['title'] }}{% if not m['is_read'] %} <span class="pill pill-new">New</span>{% endif %}</div>
+          <div class="message-body">{{ m['body'] }}</div>
+          <div class="message-time">{{ m['created_at']|datetimefmt }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ACCOUNT SUMMARY -->
+<section class="section">
+  <div class="container">
+    <div class="grid grid-3">
+      <div class="card account-card">
+        <div class="account-card-head">
+          <span class="account-card-label">Available balance</span>
+          <span class="badge badge-{{ 'approved' if current_user['account_status']=='active' else 'under_review' }}">
+            {{ 'Active' if current_user['account_status']=='active' else 'Pending' }}
+          </span>
+        </div>
+        <div class="account-balance">{{ current_user['currency'] }} {{ current_user['balance']|money }}</div>
+        <div class="account-meta">
+          {% if current_user['account_number'] %}
+            <div class="account-line"><span>Account no.</span><code data-copy="{{ current_user['account_number'] }}">{{ current_user['account_number'] }}</code></div>
+            <div class="account-line"><span>Routing no.</span><code data-copy="{{ current_user['routing_number'] }}">{{ current_user['routing_number'] }}</code></div>
+          {% else %}
+            <p class="muted-note">Your account number and routing number are issued once your application is approved.</p>
+          {% endif %}
+        </div>
+        <div class="account-card-actions">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('withdraw') }}">Withdraw</a>
+          <a class="btn btn-light btn-sm" href="{{ url_for('account') }}">Account &amp; settings</a>
+        </div>
+      </div>
+
+      <div class="card stat-card">
+        <div class="num">{{ apps|length }}</div>
+        <div class="lbl">Your applications</div>
+        <p class="muted-note mt-1">{{ apps|selectattr('status','equalto','approved')|list|length }} approved</p>
+      </div>
+
+      <div class="card stat-card">
+        <div class="num">{{ txs|length }}</div>
+        <div class="lbl">Recent transactions</div>
+        <p class="muted-note mt-1"><a href="{{ url_for('transactions') }}">View all transactions →</a></p>
+        {% if pending_withdrawals %}
+        <p class="muted-note mt-1"><span class="badge badge-pending">{{ pending_withdrawals }} withdrawal{{ 's' if pending_withdrawals != 1 }} pending</span></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WITHDRAWAL METHODS / WALLETS -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head-row">
+      <div>
+        <h2>Withdrawal methods &amp; wallets</h2>
+        <p class="form-note" style="margin-top:6px;">{% if first_deposit_complete %}All methods are unlocked. Copy the wallet or account details for the method you want to use, then request a withdrawal.{% else %}Cryptocurrency is the only method available for your first deposit. Every other method unlocks automatically once your first deposit is confirmed.{% endif %}</p>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('withdraw') }}">Request a withdrawal</a>
+    </div>
+    {% if methods %}
+    <div class="wallet-grid mt-3">
+      {% for m in methods %}
+      <div class="wallet-card {% if m['locked'] %}wallet-locked{% endif %}">
+        <div class="wallet-head">
+          <div class="wallet-icon">{{ '₿' if m['type']=='crypto' else ('🏦' if m['type']=='bank' else '💳') }}</div>
+          <div>
+            <div class="wallet-name">{{ m['name'] }}</div>
+            {% if m['network'] %}<div class="wallet-network">{{ m['network'] }}</div>{% endif %}
+          </div>
+          {% if m['locked'] %}
+            <span class="badge badge-locked">&#x1F512; Locked</span>
+          {% else %}
+            <span class="badge badge-{{ 'approved' if m['type']=='crypto' else 'submitted' }}">{{ m['type']|capitalize }}</span>
+          {% endif %}
+        </div>
+        {% if m['locked'] %}
+        <p class="wallet-lock-note">Available automatically after your first deposit is confirmed.</p>
+        {% else %}
+        {% if m['address'] %}
+        <div class="wallet-addr">
+          <span class="wallet-addr-label">Wallet / account</span>
+          <div class="wallet-addr-row">
+            <code data-copy="{{ m['address'] }}">{{ m['address'] }}</code>
+            <button type="button" class="copy-btn" data-copy-target="{{ m['address'] }}" title="Copy {{ m['name'] }} address">Copy</button>
+          </div>
+        </div>
+        {% endif %}
+        {% if m['instructions'] %}
+        <p class="wallet-note">{{ m['instructions'] }}</p>
+        {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card mt-2"><p>No withdrawal methods are available right now. Please check back shortly or contact support.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <h2>Your applications</h2>
+    {% if apps %}
+    <div class="table-wrap mt-2">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Program</th><th>Requested</th><th>Status</th><th>Awarded</th><th>Submitted</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for a in apps %}
+          <tr>
+            <td>#{{ a['id'] }}</td>
+            <td>{{ a['crisis_type'] }}</td>
+            <td>{{ a['currency'] }} {{ a['amount_requested']|money }}</td>
+            <td><span class="badge badge-{{ a['status'] }}">{{ a['status']|statuslabel }}</span></td>
+            <td>{% if a['awarded_amount'] %}{{ a['currency'] }} {{ a['awarded_amount']|money }}{% else %}—{% endif %}</td>
+            <td>{{ a['created_at']|datefmt }}</td>
+            <td><a href="{{ url_for('application_detail', app_id=a['id']) }}">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card mt-2 center" style="padding:48px;">
+      <div class="icon" style="margin:0 auto 16px;">📝</div>
+      <h3>No applications yet</h3>
+      <p>When you're ready, start your first grant application. It only takes a few minutes.</p>
+      <a class="btn btn-primary mt-2" href="{{ url_for('apply') }}">Start an application</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- RECENT ACTIVITY -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start;">
+      <div>
+        <h2>Recent account activity</h2>
+        <div class="table-wrap mt-2">
+          <table>
+            <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for t in txs %}
+              <tr>
+                <td>{{ t['created_at']|datefmt }}</td>
+                <td>{{ t['description'] }}</td>
+                <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+                <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
+                <td>{% if t['status']=='completed' %}<a href="{{ url_for('receipt', tx_id=t['id']) }}">Receipt</a>{% endif %}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5">No transactions yet. Approved grants and withdrawals will appear here.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h2>Notifications</h2>
+        <div class="note-list mt-2">
+          {% for n in notes %}
+          <a class="note-item {% if not n['is_read'] %}note-unread{% endif %}" href="{{ n['link'] or url_for('notifications') }}">
+            <div class="note-title">{{ n['title'] }}</div>
+            <div class="note-body">{{ n['body'] }}</div>
+            <div class="note-time">{{ n['created_at']|datetimefmt }}</div>
+          </a>
+          {% else %}
+          <div class="card center" style="padding:32px;">
+            <p>No notifications yet. You'll be notified here and by email about every account activity.</p>
+          </div>
+          {% endfor %}
+        </div>
+        <a class="btn btn-light btn-sm mt-2" href="{{ url_for('notifications') }}">View all notifications</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

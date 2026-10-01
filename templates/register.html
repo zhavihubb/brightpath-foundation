@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Register — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container auth-wrap">
+    <div class="auth-head">
+      <span class="eyebrow">Create Account</span>
+      <h1>Register for free</h1>
+      <p class="lead" style="font-size:1rem;">Create your account to apply for an emergency grant and track your application.</p>
+    </div>
+    <div class="form-card">
+      <form method="post" class="form-grid">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="full_name">Full name *</label>
+          <input type="text" id="full_name" name="full_name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email address *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="country">Country *</label>
+            <select id="country" name="country" required>
+              <option value="" disabled selected>— Select your country —</option>
+              {% for c in COUNTRIES %}
+              <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+            <span class="hint">Your dashboard currency is set from your country.</span>
+          </div>
+          <div class="field">
+            <label for="phone">Phone <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+            <input type="text" id="phone" name="phone" placeholder="e.g. +234 800 000 0000">
+          </div>
+        </div>
+        <div class="field">
+          <label>Your dashboard currency</label>
+          <div class="currency-readout">
+            <strong id="currencyReadout">USD</strong>
+            <span id="currencyName">United States Dollar</span>
+          </div>
+          <span class="hint">Set automatically from your country — for example, $ for the US, € for the UK/EU, ₦ for Nigeria, and so on.</span>
+        </div>
+        <div class="field">
+          <label for="password">Password *</label>
+          <input type="password" id="password" name="password" minlength="8" required>
+          <span class="hint">At least 8 characters.</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Create my account</button>
+      </form>
+      <p class="auth-alt">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
+    <p class="form-note center mt-2">Registering is free and does not commit you to anything. Brightpath will never ask you to pay to apply or receive a grant.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var map = {{ COUNTRY_CURRENCY|tojson }};
+    var names = {{ CURRENCY_NAMES|tojson }};
+    var countrySel = document.getElementById('country');
+    var readout = document.getElementById('currencyReadout');
+    var nameEl = document.getElementById('currencyName');
+    if (!countrySel || !readout) return;
+    countrySel.addEventListener('change', function () {
+      var code = map[countrySel.value] || 'USD';
+      readout.textContent = code;
+      if (nameEl) nameEl.textContent = names[code] || '';
+    });
+  })();
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

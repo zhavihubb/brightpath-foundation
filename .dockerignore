@@ -1,0 +1,36 @@
+# Git / editor
+.git
+.gitignore
+.idea/
+.vscode/
+*.swp
+
+# Python caches
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+
+# Runtime data (mounted as a volume instead)
+charity.db
+charity.db-*
+*.sqlite
+*.sqlite3
+*.db
+uploads/
+
+# Backups / logs / scratch
+*.bak
+*.orig
+*.log
+todo.md
+
+# Cloudflare local state
+.wrangler/
+.dev.vars

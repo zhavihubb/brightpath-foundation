@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------------
+# Brightpath — Git ignore rules
+# ---------------------------------------------------------------------------
+
+# --- Secrets & environment ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# --- Database (persistent runtime data, never commit) ---
+charity.db
+charity.db-journal
+charity.db-wal
+charity.db-shm
+*.sqlite
+*.sqlite3
+*.db
+*.db.bak
+
+# --- User uploads (runtime data) ---
+uploads/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+
+# --- Backups / scratch ---
+*.bak
+*.orig
+*.tmp
+*.log
+*.swp
+*~
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- Cloudflare / wrangler ---
+.wrangler/
+.dev.vars
+
+# --- Test / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Agent working notes ---
+todo.md

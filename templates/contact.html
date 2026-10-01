@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Contact — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Contact</span>
+    <h1>We're here to help.</h1>
+    <p>Questions about applying, your account, or partnering with us? Send a message and our team will respond within two business days. For faster help, you can also start a support chat from your dashboard.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid grid-2" style="align-items:start;">
+    <div class="form-card">
+      <h2>Send us a message</h2>
+      <form method="post" class="form-grid mt-2">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="name">Full name *</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" placeholder="e.g. Application question">
+        </div>
+        <div class="field">
+          <label for="message">Message *</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Send message</button>
+      </form>
+    </div>
+    <div>
+      <div class="card">
+        <div class="icon">🌍</div>
+        <h3>Global support</h3>
+        <p>We support applicants in every country. Our team operates remotely and reviews applications continuously.</p>
+      </div>
+      <div class="card mt-2">
+        <div class="icon">✉️</div>
+        <h3>Email</h3>
+        <p>support@brightpath.org<br>partnerships@brightpath.org</p>
+      </div>
+      <div class="card mt-2">
+        <div class="icon">🛡️</div>
+        <h3>Report fraud</h3>
+        <p>If someone claims to represent Brightpath and asks you for money, report it here immediately. We never charge applicants.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

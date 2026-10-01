@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}My Account — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Member Account</span>
+    <h1>My account</h1>
+    <p>Your secure Brightpath member account, balance, and personal details.</p>
+    <div class="dash-actions">
+      <a class="btn btn-primary" href="{{ url_for('withdraw') }}">↑ Withdraw funds</a>
+      <a class="btn btn-outline" href="{{ url_for('transactions') }}">Transactions</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start;">
+      <!-- ACCOUNT CARD -->
+      <div class="card account-card account-card-lg">
+        <div class="account-card-head">
+          <span class="account-card-label">Available balance</span>
+          <span class="badge badge-{{ 'approved' if current_user['account_status']=='active' else 'under_review' }}">
+            {{ 'Active' if current_user['account_status']=='active' else 'Pending activation' }}
+          </span>
+        </div>
+        <div class="account-balance account-balance-lg">{{ current_user['currency'] }} {{ current_user['balance']|money }}</div>
+        {% if current_user['account_number'] %}
+        <div class="account-grid">
+          <div class="account-field">
+            <span class="account-field-label">Account number</span>
+            <div class="account-field-value">
+              <code data-copy="{{ current_user['account_number'] }}">{{ current_user['account_number'] }}</code>
+              <button type="button" class="copy-btn" data-copy-target="{{ current_user['account_number'] }}" title="Copy account number">Copy</button>
+            </div>
+          </div>
+          <div class="account-field">
+            <span class="account-field-label">Routing number</span>
+            <div class="account-field-value">
+              <code data-copy="{{ current_user['routing_number'] }}">{{ current_user['routing_number'] }}</code>
+              <button type="button" class="copy-btn" data-copy-target="{{ current_user['routing_number'] }}" title="Copy routing number">Copy</button>
+            </div>
+          </div>
+          <div class="account-field">
+            <span class="account-field-label">Account holder</span>
+            <div class="account-field-value">{{ current_user['full_name'] }}</div>
+          </div>
+          <div class="account-field">
+            <span class="account-field-label">Currency</span>
+            <div class="account-field-value">{{ current_user['currency'] }} — {{ CURRENCY_NAMES.get(current_user['currency'], current_user['currency']) }}</div>
+          </div>
+        </div>
+        <p class="muted-note">These are your official Brightpath member details. Grant disbursements are deposited directly into this account and recorded with a receipt.</p>
+        {% else %}
+        <p class="muted-note">Your account number and routing number will be issued automatically once your grant application is approved. You can still update your profile below.</p>
+        {% endif %}
+      </div>
+
+      <!-- PROFILE FORM -->
+      <div class="form-card">
+        <h2>Profile details</h2>
+        <form method="post" action="{{ url_for('account_settings') }}" class="form-grid mt-2" id="profileForm">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="profile">
+          <div class="field">
+            <label for="full_name">Full name *</label>
+            <input type="text" id="full_name" name="full_name" value="{{ current_user['full_name'] }}" required>
+          </div>
+          <div class="form-grid two">
+            <div class="field">
+              <label for="country">Country</label>
+              <select id="country" name="country">
+                <option value="">— Select your country —</option>
+                {% for c in COUNTRIES %}
+                <option value="{{ c }}" {% if current_user['country']==c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+              </select>
+              <span class="hint">Your dashboard currency is set from your country.</span>
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input type="text" id="phone" name="phone" value="{{ current_user['phone'] or '' }}">
+            </div>
+          </div>
+          <div class="field">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" value="{{ current_user['address'] or '' }}">
+          </div>
+          <div class="field">
+            <label>Dashboard currency</label>
+            <div class="currency-readout">
+              <strong id="currencyReadout">{{ current_user['currency'] }}</strong>
+              <span id="currencyName">{{ CURRENCY_NAMES.get(current_user['currency'], '') }}</span>
+            </div>
+            <span class="hint">Determined automatically by your country. Change your country above to update it.</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Save profile</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECURITY -->
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="form-card">
+        <h2>Change password</h2>
+        <form method="post" action="{{ url_for('account_settings') }}" class="form-grid mt-2">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="password">
+          <div class="field">
+            <label for="current_password">Current password</label>
+            <input type="password" id="current_password" name="current_password" required>
+          </div>
+          <div class="field">
+            <label for="new_password">New password</label>
+            <input type="password" id="new_password" name="new_password" minlength="8" required>
+            <span class="hint">At least 8 characters.</span>
+          </div>
+          <div class="field">
+            <label for="confirm_password">Confirm new password</label>
+            <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
+          </div>
+          <button type="submit" class="btn btn-dark btn-block">Update password</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="icon">🔐</div>
+        <h3>Account security</h3>
+        <p>Your details are stored securely in our persistent backend. Passwords are hashed with PBKDF2, all forms are protected against cross-site request forgery, and your account activity is logged and reported to you by email and in-app notification.</p>
+        <ul class="check-list">
+          <li><span class="tick">✓</span> <span>Every deposit, withdrawal, application decision, and support reply is recorded.</span></li>
+          <li><span class="tick">✓</span> <span>You are notified by email and dashboard notification on every account activity.</span></li>
+          <li><span class="tick">✓</span> <span>Brightpath will never ask you to pay to receive a grant.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- TRANSACTIONS -->
+    <h2>Transaction history</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>Date</th><th>Reference</th><th>Description</th><th>Type</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
+        <tbody>
+          {% for t in txs %}
+          <tr>
+            <td>{{ t['created_at']|datetimefmt }}</td>
+            <td><code>{{ t['reference'] }}</code></td>
+            <td>{{ t['description'] }}</td>
+            <td><span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span></td>
+            <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
+            <td>{% if t['status']=='completed' %}<a class="btn btn-light btn-sm" href="{{ url_for('receipt', tx_id=t['id']) }}">View receipt</a>{% else %}<span class="muted-note">—</span>{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">No transactions yet. Approved grant disbursements will appear here.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Live currency preview based on the selected country
+  (function () {
+    var map = {{ COUNTRY_CURRENCY|tojson }};
+    var names = {{ CURRENCY_NAMES|tojson }};
+    var countrySel = document.getElementById('country');
+    var readout = document.getElementById('currencyReadout');
+    var nameEl = document.getElementById('currencyName');
+    if (!countrySel || !readout) return;
+    countrySel.addEventListener('change', function () {
+      var code = map[countrySel.value] || 'USD';
+      readout.textContent = code;
+      if (nameEl) nameEl.textContent = names[code] || '';
+    });
+  })();
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

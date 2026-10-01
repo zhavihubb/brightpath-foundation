@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------------------
+# Cloudflare Pages — optional static landing site for Brightpath.
+#
+# The dynamic Flask application is hosted separately through a Cloudflare
+# Tunnel (see DEPLOYMENT.md). This Pages project hosts a fast, static landing
+# page for your apex/www domain that links visitors to the app.
+#
+# Deploy with:
+#   npx wrangler pages deploy public --project-name brightpath
+#
+# Or connect this repository in the Cloudflare dashboard:
+#   Pages -> Create project -> Connect to Git -> build output directory: public
+# ---------------------------------------------------------------------------
+name = "brightpath"
+pages_build_output_dir = "public"
+compatibility_date = "2025-01-01"

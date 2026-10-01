@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Messages & Shout-outs — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Messages &amp; shout-outs</h1>
+    <p>Send a shout-out, announcement or motivational message to every member at once, or to a single member. Messages appear instantly on their dashboard and in their notification centre, and are emailed to them.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_users') }}">Members &amp; accounts</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_support') }}">Support inbox</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:1000px;">
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="form-card">
+        <h2>Compose a message</h2>
+        <p class="form-note" style="margin-top:6px;">Write your message below and choose who should receive it.</p>
+        <form method="post" action="{{ url_for('admin_messages_send') }}" class="form-grid mt-2" id="msgForm">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+          <div class="field">
+            <label>Send to *</label>
+            <div class="audience-toggle">
+              <label class="audience-opt">
+                <input type="radio" name="audience" value="all" checked> <span>All members ({{ members|length }})</span>
+              </label>
+              <label class="audience-opt">
+                <input type="radio" name="audience" value="user"> <span>A single member</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field" id="recipientField" style="display:none;">
+            <label for="recipient_id">Choose member</label>
+            <select id="recipient_id" name="recipient_id">
+              <option value="">Select a member&hellip;</option>
+              {% for m in members %}
+              <option value="{{ m['id'] }}">{{ m['full_name'] }} &mdash; {{ m['email'] }}{% if m['account_number'] %} (Acct {{ m['account_number'] }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="title">Subject / headline</label>
+            <input type="text" id="title" name="title" placeholder="e.g. You've got this &mdash; a note from Brightpath" maxlength="120">
+            <span class="hint">Leave blank to use &ldquo;Message from the Brightpath team&rdquo;.</span>
+          </div>
+
+          <div class="field">
+            <label for="body">Message *</label>
+            <textarea id="body" name="body" placeholder="Write your shout-out or motivational message&hellip;" required></textarea>
+          </div>
+
+          <div class="field">
+            <label>Quick templates</label>
+            <div class="template-chips">
+              <button type="button" class="chip" data-title="You've got this!"
+                data-body="Hello from the Brightpath team. We know times can be tough, but your strength and resilience inspire us every day. Keep going &mdash; we are standing with you. Warm regards, The Brightpath Team">Motivation</button>
+              <button type="button" class="chip" data-title="Good news is on the way"
+                data-body="Great news &mdash; our review team is working through applications and payouts right now. Please keep an eye on your dashboard and notifications. Thank you for your patience. &mdash; The Brightpath Team">Announcement</button>
+              <button type="button" class="chip" data-title="Thank you for being part of Brightpath"
+                data-body="Thank you for being part of the Brightpath community. Every member makes this foundation stronger. If you need anything at all, our support team is here for you 24/7 through the in-app support chat. &mdash; The Brightpath Team">Thank you</button>
+              <button type="button" class="chip" data-title="Stay safe from fraud"
+                data-body="A friendly reminder: Brightpath will never ask you to pay a fee to apply for or receive a grant. If anyone requests payment on our behalf, please report it immediately through support. Stay safe. &mdash; The Brightpath Team">Fraud warning</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Send message</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="icon">&#x1F4E3;</div>
+        <h3>How messaging works</h3>
+        <ul class="check-list">
+          <li><span class="tick">&#10003;</span> <span>Send to <strong>all members</strong> for a shout-out, announcement or motivational note.</span></li>
+          <li><span class="tick">&#10003;</span> <span>Or send a private message to a <strong>single member</strong> by choosing them from the list.</span></li>
+          <li><span class="tick">&#10003;</span> <span>Every recipient gets an <strong>in-app notification</strong> and an <strong>email</strong>, and the message appears on their dashboard.</span></li>
+          <li><span class="tick">&#10003;</span> <span>Every message you send is recorded below for your records.</span></li>
+        </ul>
+        <p class="muted-note mt-2">Messages sent: <strong>{{ sent_count }}</strong></p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Message history</h2>
+    <p class="form-note" style="margin-top:6px;">A record of every shout-out and message sent to members.</p>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>#</th><th>Subject &amp; message</th><th>Audience</th><th>Recipients</th><th>Sent by</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for b in history %}
+          <tr>
+            <td>{{ b['id'] }}</td>
+            <td>
+              <strong>{{ b['title'] }}</strong><br>
+              <span style="font-size:.82rem;color:var(--muted);">{{ b['body'][:110] }}{% if b['body']|length > 110 %}&hellip;{% endif %}</span>
+            </td>
+            <td>
+              {% if b['audience'] == 'all' %}
+                <span class="badge badge-submitted">All members</span>
+              {% else %}
+                <span class="badge badge-under_review">{{ b['recipient_name'] or 'Member' }}</span>
+              {% endif %}
+            </td>
+            <td>{{ b['recipient_count'] }}</td>
+            <td>{{ b['sender_name'] or '&mdash;' }}</td>
+            <td>{{ b['created_at']|datetimefmt }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">No messages sent yet. Compose your first shout-out above.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var radios = document.querySelectorAll('input[name="audience"]');
+  var rf = document.getElementById('recipientField');
+  function syncAudience() {
+    var sel = document.querySelector('input[name="audience"]:checked');
+    rf.style.display = (sel && sel.value === 'user') ? 'grid' : 'none';
+  }
+  radios.forEach(function (r) { r.addEventListener('change', syncAudience); });
+  syncAudience();
+
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      document.getElementById('title').value = c.getAttribute('data-title');
+      document.getElementById('body').value = c.getAttribute('data-body');
+    });
+  });
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

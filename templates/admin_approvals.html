@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Approvals — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Approvals queue</h1>
+    <p>Review every pending deposit and withdrawal request. Approve to release it, or decline with a reason and clear next steps for the member.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_transactions') }}">All transactions</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_settings') }}">Settings</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-3">
+      <div class="card stat-card"><div class="num">{{ pending|length }}</div><div class="lbl">Pending requests</div></div>
+      <div class="card stat-card"><div class="num">{{ pending|selectattr('type','equalto','deposit')|list|length }}</div><div class="lbl">Deposits to approve</div></div>
+      <div class="card stat-card"><div class="num">{{ pending|selectattr('type','equalto','withdrawal')|list|length }}</div><div class="lbl">Withdrawals to approve</div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    {% if pending %}
+    <div class="approval-list">
+      {% for t in pending %}
+      <div class="approval-card">
+        <div class="approval-head">
+          <div>
+            <span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span>
+            <span class="badge badge-pending">Pending</span>
+          </div>
+          <div class="approval-amount">{{ t['currency'] }} {{ t['amount']|money }}</div>
+        </div>
+
+        <div class="approval-grid">
+          <div class="approval-field"><span>Member</span><strong>{{ t['user_name'] }}</strong></div>
+          <div class="approval-field"><span>Email</span><strong>{{ t['user_email'] }}</strong></div>
+          <div class="approval-field"><span>Account no.</span><strong><code>{{ t['user_account'] or '—' }}</code></strong></div>
+          <div class="approval-field"><span>Current balance</span><strong>{{ t['user_currency'] }} {{ t['user_balance']|money }}</strong></div>
+          <div class="approval-field"><span>Reference</span><strong><code>{{ t['reference'] }}</code></strong></div>
+          <div class="approval-field"><span>Requested</span><strong>{{ t['created_at']|datetimefmt }}</strong></div>
+          {% if t['type'] == 'withdrawal' %}
+          <div class="approval-field"><span>Method</span><strong>{{ t['method'] or '—' }}{% if t['network'] %} · {{ t['network'] }}{% endif %}</strong></div>
+          <div class="approval-field"><span>Destination</span><strong><code class="dest-code">{{ t['destination'] or '—' }}</code></strong></div>
+          {% endif %}
+          <div class="approval-field approval-field-wide"><span>Description</span><strong>{{ t['description'] }}</strong></div>
+        </div>
+
+        <div class="approval-actions">
+          <form method="post" action="{{ url_for('admin_tx_approve', tx_id=t['id']) }}" class="inline-form">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ url_for('admin_approvals') }}">
+            <input type="text" name="note" placeholder="Optional note to member" class="mini-input">
+            <button type="submit" class="btn btn-primary btn-sm">✓ Approve</button>
+          </form>
+          <button type="button" class="btn btn-danger btn-sm" data-toggle-reject="reject-{{ t['id'] }}">✕ Decline</button>
+        </div>
+
+        <form method="post" action="{{ url_for('admin_tx_reject', tx_id=t['id']) }}" class="reject-form" id="reject-{{ t['id'] }}" hidden>
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('admin_approvals') }}">
+          <div class="field">
+            <label for="reason-{{ t['id'] }}">Reason for declining *</label>
+            <input type="text" id="reason-{{ t['id'] }}" name="reason" placeholder="e.g. Destination wallet does not match the account holder" required>
+          </div>
+          <div class="field">
+            <label for="instr-{{ t['id'] }}">What the member should do next</label>
+            <input type="text" id="instr-{{ t['id'] }}" name="instructions" placeholder="e.g. Update your wallet address and submit a new request">
+          </div>
+          <div class="reject-actions">
+            <button type="submit" class="btn btn-danger btn-sm">Confirm decline</button>
+            <button type="button" class="btn btn-light btn-sm" data-cancel-reject="reject-{{ t['id'] }}">Cancel</button>
+          </div>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card center" style="padding:48px;">
+      <div class="icon" style="margin:0 auto 16px;">✅</div>
+      <h3>No pending requests</h3>
+      <p>Every deposit and withdrawal has been reviewed. New requests will appear here automatically.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('[data-toggle-reject]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var el = document.getElementById(btn.getAttribute('data-toggle-reject'));
+      if (el) { el.hidden = !el.hidden; }
+    });
+  });
+  document.querySelectorAll('[data-cancel-reject]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var el = document.getElementById(btn.getAttribute('data-cancel-reject'));
+      if (el) { el.hidden = true; }
+    });
+  });
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

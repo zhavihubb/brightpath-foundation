@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Support Inbox — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Support inbox</h1>
+    <p>Every member conversation in one place. Reply to anyone, attach images, and members are notified by email and dashboard.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_users') }}">Members &amp; accounts</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_transactions') }}">Transactions</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="thread-list">
+      {% for t in threads %}
+      <a class="thread-item {% if t['unread'] %}thread-unread{% endif %}" href="{{ url_for('support_thread', thread_id=t['id']) }}">
+        <div class="thread-item-head">
+          <span class="thread-subject">{{ t['subject'] }}</span>
+          <span class="badge badge-{{ 'approved' if t['status']=='open' else 'declined' }}">{{ t['status']|capitalize }}</span>
+        </div>
+        <div class="thread-item-meta">
+          <span><strong>{{ t['user_name'] }}</strong> · {{ t['user_email'] }}</span>
+          <span>{{ t['msg_count'] }} message{{ '' if t['msg_count']==1 else 's' }} · {{ (t['last_message_at'] or t['created_at'])|datetimefmt }}</span>
+        </div>
+        {% if t['unread'] %}<span class="pill pill-new">{{ t['unread'] }} new</span>{% endif %}
+      </a>
+      {% else %}
+      <div class="card center" style="padding:48px;">
+        <div class="icon" style="margin:0 auto 12px;">📥</div>
+        <h3>No support conversations yet</h3>
+        <p>When a member messages support, their conversation will appear here.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

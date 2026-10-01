@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Support — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <h1>Support chat</h1>
+    <p>Chat directly with our support team about any issue or question. You can attach images and documents in both directions.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start;">
+      <!-- START NEW CHAT -->
+      <div class="form-card">
+        <h2>Start a new conversation</h2>
+        <p class="form-note" style="margin-top:6px;">Tell us what you need help with. Our team receives your message instantly and will reply here and by email.</p>
+        <form method="post" action="{{ url_for('support_new') }}" class="form-grid mt-2" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="field">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="e.g. Question about my application" required>
+          </div>
+          <div class="field">
+            <label for="body">Message *</label>
+            <textarea id="body" name="body" placeholder="Describe your issue or question in detail…" required></textarea>
+          </div>
+          <div class="field">
+            <label for="attachment">Attach an image or file <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+            <input type="file" id="attachment" name="attachment" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.txt,.doc,.docx">
+            <span class="hint">Up to 25 MB. Images, PDF, Word, or text files.</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Send message</button>
+        </form>
+      </div>
+
+      <!-- THREAD LIST -->
+      <div>
+        <h2>Your conversations</h2>
+        <div class="thread-list mt-2">
+          {% for t in threads %}
+          <a class="thread-item {% if t['unread'] %}thread-unread{% endif %}" href="{{ url_for('support_thread', thread_id=t['id']) }}">
+            <div class="thread-item-head">
+              <span class="thread-subject">{{ t['subject'] }}</span>
+              <span class="badge badge-{{ 'approved' if t['status']=='open' else 'declined' }}">{{ t['status']|capitalize }}</span>
+            </div>
+            <div class="thread-item-meta">
+              <span>{{ t['msg_count'] }} message{{ '' if t['msg_count']==1 else 's' }}</span>
+              <span>{{ (t['last_message_at'] or t['created_at'])|datetimefmt }}</span>
+            </div>
+            {% if t['unread'] %}<span class="pill pill-new">New reply</span>{% endif %}
+          </a>
+          {% else %}
+          <div class="card center" style="padding:40px;">
+            <div class="icon" style="margin:0 auto 12px;">💬</div>
+            <h3>No conversations yet</h3>
+            <p>Start a chat using the form and our team will get back to you.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Transactions — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <h1>Transactions</h1>
+    <p>A complete, timestamped record of every deposit and withdrawal on your Brightpath account.</p>
+    <div class="dash-actions">
+      <a class="btn btn-primary" href="{{ url_for('withdraw') }}">↑ Withdraw funds</a>
+      <a class="btn btn-outline" href="{{ url_for('account') }}">My account</a>
+      <a class="btn btn-outline" href="{{ url_for('dashboard') }}">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="card account-card" style="max-width:520px;">
+      <span class="account-card-label">Current balance</span>
+      <div class="account-balance">{{ current_user['currency'] }} {{ current_user['balance']|money }}</div>
+      {% if current_user['account_number'] %}
+      <div class="account-meta">
+        <div class="account-line"><span>Account no.</span><code data-copy="{{ current_user['account_number'] }}">{{ current_user['account_number'] }}</code></div>
+        <div class="account-line"><span>Routing no.</span><code data-copy="{{ current_user['routing_number'] }}">{{ current_user['routing_number'] }}</code></div>
+      </div>
+      {% endif %}
+    </div>
+
+    <h2 class="mt-3">All transactions</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>Date</th><th>Reference</th><th>Description</th><th>Method / sender</th><th>Type</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
+        <tbody>
+          {% for t in txs %}
+          <tr>
+            <td>{{ t['created_at']|datetimefmt }}</td>
+            <td><code>{{ t['reference'] }}</code></td>
+            <td>{{ t['description'] }}</td>
+            <td>
+              {% if t['type'] == 'withdrawal' %}
+                {{ t['method'] or '—' }}{% if t['network'] %} · {{ t['network'] }}{% endif %}
+                {% if t['destination'] %}<br><code class="dest-code">{{ t['destination'] }}</code>{% endif %}
+              {% else %}
+                {{ t['sender_name'] or '—' }}
+              {% endif %}
+            </td>
+            <td><span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span></td>
+            <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
+            <td>{% if t['status']=='completed' %}<a class="btn btn-light btn-sm" href="{{ url_for('receipt', tx_id=t['id']) }}">Receipt</a>{% else %}<span class="muted-note">—</span>{% endif %}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8">No transactions yet. Approved grant disbursements and withdrawals will appear here.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

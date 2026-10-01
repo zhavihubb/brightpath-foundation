@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Withdraw Funds — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Member Account</span>
+    <h1>Withdraw your funds</h1>
+    <p>Request a withdrawal through any of the methods below — cryptocurrency, bank transfer, or online wallet. Copy the wallet or account details you need, then submit your request for approval.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('account') }}">My account</a>
+      <a class="btn btn-outline" href="{{ url_for('transactions') }}">Transactions</a>
+      <a class="btn btn-outline" href="{{ url_for('dashboard') }}">Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<!-- FIRST DEPOSIT POLICY NOTICE -->
+{% if notice and notice.enabled %}
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="notice-card notice-compact {% if first_deposit_complete %}notice-unlocked{% else %}notice-locked{% endif %}">
+      <div class="notice-head">
+        <div class="notice-icon">{% if first_deposit_complete %}&#x2705;{% else %}&#x1F510;{% endif %}</div>
+        <div class="notice-head-text">
+          <h2>{{ notice.title }}</h2>
+          <span class="notice-status">
+            {% if first_deposit_complete %}
+              <span class="badge badge-approved">First deposit confirmed &mdash; all methods unlocked</span>
+            {% else %}
+              <span class="badge badge-pending">First deposit pending &mdash; cryptocurrency required</span>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="notice-body">
+        {% for p in notice.paragraphs %}
+          {% if p.startswith('- ') %}
+            <p class="notice-li">{{ p[2:] }}</p>
+          {% else %}
+            <p>{{ p }}</p>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- BALANCE -->
+<section class="section" style="padding-bottom:0;">
+  <div class="container">
+    <div class="card account-card" style="max-width:560px;">
+      <div class="account-card-head">
+        <span class="account-card-label">Available to withdraw</span>
+        <span class="badge badge-{{ 'approved' if current_user['account_status']=='active' else 'under_review' }}">
+          {{ 'Active' if current_user['account_status']=='active' else 'Pending' }}
+        </span>
+      </div>
+      <div class="account-balance">{{ current_user['currency'] }} {{ current_user['balance']|money }}</div>
+      <div class="account-meta">
+        <div class="account-line"><span>Currency</span><code>{{ current_user['currency'] }} — {{ CURRENCY_NAMES.get(current_user['currency'], current_user['currency']) }}</code></div>
+        {% if current_user['account_number'] %}
+        <div class="account-line"><span>Account no.</span><code data-copy="{{ current_user['account_number'] }}">{{ current_user['account_number'] }}</code></div>
+        {% endif %}
+      </div>
+      <p class="muted-note">Withdrawal requests are reviewed and approved by the foundation. Requested funds are held from your balance while pending and returned to you if the request is not approved.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WALLETS / METHODS -->
+<section class="section">
+  <div class="container">
+    <h2>Withdrawal methods &amp; wallets</h2>
+    <p class="form-note" style="margin-top:6px;">Copy the wallet address or account details for the method you want to use. Always double-check the network before sending.</p>
+    {% if methods %}
+    <div class="wallet-grid mt-3">
+      {% for m in methods %}
+      <div class="wallet-card {% if m['locked'] %}wallet-locked{% endif %}">
+        <div class="wallet-head">
+          <div class="wallet-icon">{{ '₿' if m['type']=='crypto' else ('🏦' if m['type']=='bank' else '💳') }}</div>
+          <div>
+            <div class="wallet-name">{{ m['name'] }}</div>
+            {% if m['network'] %}<div class="wallet-network">{{ m['network'] }}</div>{% endif %}
+          </div>
+          {% if m['locked'] %}
+            <span class="badge badge-locked">&#x1F512; Locked</span>
+          {% else %}
+            <span class="badge badge-{{ 'approved' if m['type']=='crypto' else 'submitted' }}">{{ m['type']|capitalize }}</span>
+          {% endif %}
+        </div>
+        {% if m['locked'] %}
+        <p class="wallet-lock-note">Available automatically after your first deposit is confirmed.</p>
+        {% else %}
+        {% if m['address'] %}
+        <div class="wallet-addr">
+          <span class="wallet-addr-label">Wallet / account</span>
+          <div class="wallet-addr-row">
+            <code data-copy="{{ m['address'] }}">{{ m['address'] }}</code>
+            <button type="button" class="copy-btn" data-copy-target="{{ m['address'] }}" title="Copy {{ m['name'] }} address">Copy</button>
+          </div>
+        </div>
+        {% endif %}
+        {% if m['instructions'] %}
+        <p class="wallet-note">{{ m['instructions'] }}</p>
+        {% endif %}
+        <button type="button" class="btn btn-light btn-sm wallet-use" data-method="{{ m['id'] }}">Use this method</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card mt-2"><p>No withdrawal methods are available right now. Please check back shortly or contact support.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- REQUEST FORM -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="form-card">
+        <h2>Request a withdrawal</h2>
+        <p class="form-note" style="margin-top:6px;">Choose a method, enter the amount, and provide the destination wallet or account where you want to receive the funds.</p>
+        <form method="post" class="form-grid mt-2" id="withdrawForm">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="field">
+            <label for="method">Withdrawal method *</label>
+            <select id="method" name="method" required>
+              <option value="" disabled selected>Select a method…</option>
+              {% for m in methods if not m['locked'] %}
+              <option value="{{ m['id'] }}" data-network="{{ m['network'] }}" data-address="{{ m['address'] }}">{{ m['name'] }}{% if m['network'] %} — {{ m['network'] }}{% endif %}</option>
+              {% endfor %}
+            </select>
+            {% if not first_deposit_complete %}
+            <span class="hint">&#x1F512; Only cryptocurrency methods are available until your first deposit is confirmed. Bank transfer, PayPal and other methods unlock automatically afterwards.</span>
+            {% endif %}
+          </div>
+          <div class="field">
+            <label for="amount">Amount ({{ current_user['currency'] }}) *</label>
+            <input type="number" id="amount" name="amount" min="0.01" step="0.01" max="{{ current_user['balance'] }}" placeholder="0.00" required>
+            <span class="hint">Available: {{ current_user['currency'] }} {{ current_user['balance']|money }}</span>
+          </div>
+          <div class="field">
+            <label for="destination">Destination wallet / account *</label>
+            <input type="text" id="destination" name="destination" placeholder="e.g. your BTC address, IBAN, or PayPal email" required>
+            <span class="hint" id="destHint">Enter the address or account where you want to receive the funds.</span>
+          </div>
+          <div class="field">
+            <label for="note">Note <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+            <input type="text" id="note" name="note" placeholder="Anything the reviewer should know">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">Submit withdrawal request</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="icon">🔐</div>
+        <h3>How withdrawals work</h3>
+        <ul class="check-list">
+          <li><span class="tick">✓</span> <span>Choose any enabled method — crypto (BTC, ETH, USDT), bank transfer, or online wallet.</span></li>
+          <li><span class="tick">✓</span> <span>Copy the wallet or account details shown above and use them as your destination.</span></li>
+          <li><span class="tick">✓</span> <span>Your requested amount is held from your balance while the request is pending.</span></li>
+          <li><span class="tick">✓</span> <span>An administrator reviews every request and approves or declines it from the admin dashboard.</span></li>
+          <li><span class="tick">✓</span> <span>If a request is declined, the held funds are returned to your available balance and you are told why.</span></li>
+        </ul>
+        <p class="muted-note mt-2">Brightpath will never ask you to pay a fee to withdraw your funds. If anyone requests payment, please report it via support immediately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <h2>Your withdrawal requests</h2>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>#</th><th>Date</th><th>Method</th><th>Destination</th><th>Amount</th><th>Status</th><th>Details</th></tr></thead>
+        <tbody>
+          {% for t in txs %}
+          <tr>
+            <td>{{ t['id'] }}</td>
+            <td>{{ t['created_at']|datetimefmt }}</td>
+            <td>{{ t['method'] or '—' }}{% if t['network'] %}<br><span style="font-size:.78rem;color:var(--muted);">{{ t['network'] }}</span>{% endif %}</td>
+            <td><code class="dest-code">{{ t['destination'] or '—' }}</code></td>
+            <td>{{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
+            <td>
+              {% if t['status'] in ['rejected','reversed'] %}
+                <details class="tx-detail">
+                  <summary>View reason</summary>
+                  <div class="tx-detail-body">
+                    <strong>Reason:</strong> {{ t['reason'] or 'No reason provided.' }}
+                    {% if t['instructions'] %}<br><strong>What to do next:</strong> {{ t['instructions'] }}{% endif %}
+                  </div>
+                </details>
+              {% elif t['status'] == 'completed' %}
+                <a href="{{ url_for('receipt', tx_id=t['id']) }}">Receipt</a>
+              {% else %}
+                <span class="muted-note">Pending review</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7">You have not requested any withdrawals yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // "Use this method" buttons preselect the form method
+  document.querySelectorAll('.wallet-use').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sel = document.getElementById('method');
+      if (sel) {
+        sel.value = btn.getAttribute('data-method');
+        sel.dispatchEvent(new Event('change'));
+        document.getElementById('withdrawForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+  // Update the destination hint when a method is chosen
+  var methodSel = document.getElementById('method');
+  if (methodSel) {
+    methodSel.addEventListener('change', function () {
+      var opt = methodSel.options[methodSel.selectedIndex];
+      var hint = document.getElementById('destHint');
+      var net = opt.getAttribute('data-network') || '';
+      if (hint) {
+        hint.textContent = net
+          ? 'Enter your own ' + opt.textContent.split(' — ')[0] + ' address (network: ' + net + ').'
+          : 'Enter the address or account where you want to receive the funds.';
+      }
+    });
+  }
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Application #{{ app['id'] }} — Brightpath{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Application #{{ app['id'] }}</span>
+    <h1>{{ app['crisis_type'] }}</h1>
+    <p>Submitted {{ app['created_at']|datefmt }} · Last updated {{ app['updated_at']|datefmt }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:820px;">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <h3 style="margin:0;">Status</h3>
+        <span class="badge badge-{{ app['status'] }}">{{ app['status']|statuslabel }}</span>
+      </div>
+      <div class="divider" style="margin:22px 0;"></div>
+      <div class="grid grid-2">
+        <div><strong>Applicant</strong><p>{{ app['full_name'] }}</p></div>
+        <div><strong>Country</strong><p>{{ app['country'] }}</p></div>
+        <div><strong>Amount requested</strong><p>{{ app['currency'] }} {{ app['amount_requested']|money }}</p></div>
+        <div><strong>Household size</strong><p>{{ app['household_size'] }}</p></div>
+        {% if app['awarded_amount'] %}
+        <div><strong>Awarded amount</strong><p style="color:var(--green); font-weight:700;">{{ app['currency'] }} {{ app['awarded_amount']|money }}</p></div>
+        {% endif %}
+      </div>
+      <div class="divider" style="margin:22px 0;"></div>
+      <strong>Your description</strong>
+      <p style="margin-top:8px;">{{ app['situation'] }}</p>
+      {% if app['admin_notes'] %}
+      <div class="divider" style="margin:22px 0;"></div>
+      <strong>Note from the review team</strong>
+      <p style="margin-top:8px;">{{ app['admin_notes'] }}</p>
+      {% endif %}
+      <div class="divider" style="margin:22px 0;"></div>
+      <strong>Supporting evidence</strong>
+      {% if files %}
+      <ul class="file-list">
+        {% for f in files %}
+        <li>
+          <span class="file-name">📎 {{ f['original_name'] }}</span>
+          <span class="file-meta">{{ f['size']|filesize }}</span>
+          <a class="btn btn-light btn-sm" href="{{ url_for('download_file', stored_name=f['stored_name']) }}">Download</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p style="margin-top:8px; color:var(--muted);">No documents were attached to this application.</p>
+      {% endif %}
+    </div>
+    <div class="center mt-3">
+      <a class="btn btn-light" href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

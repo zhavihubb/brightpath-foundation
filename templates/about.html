@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}About — Brightpath Crisis Relief Foundation{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">About Us</span>
+    <h1>A foundation built for the worst days — and the recovery after.</h1>
+    <p>Brightpath Crisis Relief Foundation is an independent charitable organization that awards emergency grants to people affected by disasters, conflict, and sudden hardship around the world.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split">
+    <div>
+      <h2>Why we exist</h2>
+      <p>Crises do not wait for paperwork. When a flood takes a home, when an illness empties a bank account, when conflict forces a family to flee, the difference between despair and recovery is often a small, timely amount of money. Brightpath was created to be that bridge.</p>
+      <p>We are deliberately focused. Rather than spreading thin across everything, we concentrate on emergency relief and recovery: shelter, medical support, education continuity, and livelihood rebuilding. We keep our grants modest and our process honest so that help reaches people quickly.</p>
+      <h2 class="mt-3">Our values</h2>
+      <ul class="check-list">
+        <li><span class="tick">✓</span> <span><strong>Dignity first.</strong> Applicants are people, not case numbers. We treat every request with respect and confidentiality.</span></li>
+        <li><span class="tick">✓</span> <span><strong>Radical transparency.</strong> Grants and disbursements are recorded and published. Anyone can see the totals.</span></li>
+        <li><span class="tick">✓</span> <span><strong>No barriers to help.</strong> Applying is always free. We never charge a fee to receive a grant, and we never ask for payment details to "release" funds.</span></li>
+        <li><span class="tick">✓</span> <span><strong>Global fairness.</strong> Applications from every country are reviewed against the same published criteria.</span></li>
+      </ul>
+    </div>
+    <div>
+      <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80" alt="Hands joined together" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff; border-top:1px solid var(--line);">
+  <div class="container">
+    <div class="center">
+      <span class="eyebrow">Governance</span>
+      <h2>How we stay accountable</h2>
+    </div>
+    <div class="grid grid-3 mt-3">
+      <div class="card">
+        <div class="icon">📋</div>
+        <h3>Published criteria</h3>
+        <p>Eligibility rules and review standards are published openly, so every applicant knows how decisions are made.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔍</div>
+        <h3>Recorded decisions</h3>
+        <p>Every application, award, and disbursement is logged in our system and reflected on the transparency page.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3>Anti-fraud commitment</h3>
+        <p>We never ask applicants for money. If anyone contacts you claiming to be us and requests payment, it is a scam — report it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <h2>Join the mission.</h2>
+      <p>If you are facing a crisis, apply for support today. It takes less than a minute to create an account.</p>
+      <div class="hero-cta" style="justify-content:center;">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}">Create an account</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('how_to_apply') }}">How to apply</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>

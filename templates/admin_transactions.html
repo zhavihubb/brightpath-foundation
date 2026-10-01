@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Transactions & Deposits — Admin — Brightpath{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Administrator</span>
+    <h1>Transactions &amp; deposits</h1>
+    <p>Push grant funds into any member's account, approve or decline pending requests, and reverse transactions with a clear reason and next steps.</p>
+    <div class="dash-actions">
+      <a class="btn btn-outline" href="{{ url_for('admin') }}">Review dashboard</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_approvals') }}">Approvals{% if pending_count %} <span class="nav-badge">{{ pending_count }}</span>{% endif %}</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_users') }}">Members &amp; accounts</a>
+      <a class="btn btn-outline" href="{{ url_for('admin_settings') }}">Settings</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-2" style="align-items:start;">
+      <!-- PUSH MONEY -->
+      <div class="form-card">
+        <h2>Push money to a member</h2>
+        <p class="form-note" style="margin-top:6px;">Funds are sent from the official foundation account configured in Settings, and appear as a deposit with a full receipt.</p>
+        <form method="post" action="{{ url_for('admin_push_money') }}" class="form-grid mt-2" id="pushForm">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div class="field">
+            <label for="user">Recipient (member ID or account number) *</label>
+            <input type="text" id="user" name="user" list="memberList" placeholder="e.g. 3 or 8001234567" required>
+            <datalist id="memberList">
+              {% for m in members %}
+              <option value="{{ m['account_number'] }}">{{ m['full_name'] }} — {{ m['currency'] }} {{ m['balance']|money }}</option>
+              {% endfor %}
+            </datalist>
+            <span class="hint">Select a member or type their account number.</span>
+          </div>
+          <div class="form-grid two">
+            <div class="field">
+              <label for="amount">Amount *</label>
+              <input type="number" id="amount" name="amount" min="0.01" step="0.01" placeholder="500.00" required>
+            </div>
+            <div class="field">
+              <label for="currency">Currency</label>
+              <select id="currency" name="currency">
+                {% for c in ['USD','GBP','EUR','NGN','KES','INR'] %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description" placeholder="e.g. Disaster Relief grant disbursement">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Deposit funds</button>
+        </form>
+      </div>
+
+      <!-- MEMBERS QUICK LIST -->
+      <div class="card">
+        <h3>Active member accounts</h3>
+        <div class="table-wrap mt-2">
+          <table>
+            <thead><tr><th>Member</th><th>Account no.</th><th>Balance</th></tr></thead>
+            <tbody>
+              {% for m in members %}
+              <tr>
+                <td>{{ m['full_name'] }}</td>
+                <td><code>{{ m['account_number'] }}</code></td>
+                <td>{{ m['currency'] }} {{ m['balance']|money }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3">No active accounts yet. Activate a member first.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="stat-card mt-2" style="text-align:left;">
+          <div class="num">${{ total|money }}</div>
+          <div class="lbl">Total disbursed to date</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>All transactions</h2>
+    <p class="form-note" style="margin-top:6px;">Approve or decline pending requests, and reverse completed transactions with a reason. Reversing a deposit removes the funds; reversing a withdrawal returns them.</p>
+    <div class="table-wrap mt-2">
+      <table>
+        <thead><tr><th>#</th><th>Date</th><th>Member</th><th>Type</th><th>Method / dest.</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for t in txs %}
+          <tr>
+            <td>{{ t['id'] }}</td>
+            <td>{{ t['created_at']|datetimefmt }}<br><span style="font-size:.76rem;color:var(--muted);"><code>{{ t['reference'] }}</code></span></td>
+            <td>{{ t['user_name'] }}<br><span style="font-size:.8rem;color:var(--muted);">{{ t['user_email'] }}</span><br><span style="font-size:.78rem;color:var(--muted);">Acct {{ t['user_account'] or '—' }}</span></td>
+            <td><span class="badge badge-{{ 'approved' if t['type']=='deposit' else 'under_review' }}">{{ t['type']|capitalize }}</span></td>
+            <td>
+              {% if t['type'] == 'withdrawal' %}
+                {{ t['method'] or '—' }}{% if t['network'] %}<br><span style="font-size:.78rem;color:var(--muted);">{{ t['network'] }}</span>{% endif %}
+                {% if t['destination'] %}<br><code class="dest-code">{{ t['destination'] }}</code>{% endif %}
+              {% else %}
+                <span style="color:var(--muted);">{{ t['description'] }}</span>
+              {% endif %}
+            </td>
+            <td class="amount-{{ 'pos' if t['type']=='deposit' else 'neg' }}">{{ '+' if t['type']=='deposit' else '−' }} {{ t['currency'] }} {{ t['amount']|money }}</td>
+            <td><span class="badge badge-{{ t['status'] }}">{{ t['status']|statuslabel }}</span></td>
+            <td class="tx-actions">
+              {% if t['status'] == 'pending' %}
+                <form method="post" action="{{ url_for('admin_tx_approve', tx_id=t['id']) }}" class="inline-form">
+                  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ url_for('admin_transactions') }}">
+                  <button type="submit" class="btn btn-primary btn-xs">✓ Approve</button>
+                </form>
+                <button type="button" class="btn btn-danger btn-xs" data-reject="{{ t['id'] }}">✕ Decline</button>
+              {% elif t['status'] == 'completed' %}
+                <button type="button" class="btn btn-dark btn-xs" data-reverse="{{ t['id'] }}" data-amount="{{ t['currency'] }} {{ t['amount']|money }}" data-type="{{ t['type'] }}" data-member="{{ t['user_name'] }}">↺ Reverse</button>
+                <a class="btn btn-light btn-xs" href="{{ url_for('receipt', tx_id=t['id']) }}">Receipt</a>
+              {% else %}
+                <details class="tx-detail">
+                  <summary>{{ 'Reason' }}</summary>
+                  <div class="tx-detail-body">
+                    <strong>Reason:</strong> {{ t['reason'] or 'No reason provided.' }}
+                    {% if t['instructions'] %}<br><strong>Next steps:</strong> {{ t['instructions'] }}{% endif %}
+                  </div>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+          <!-- inline reject row -->
+          {% if t['status'] == 'pending' %}
+          <tr class="reject-row" id="rejrow-{{ t['id'] }}" hidden>
+            <td colspan="8">
+              <form method="post" action="{{ url_for('admin_tx_reject', tx_id=t['id']) }}" class="reject-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ url_for('admin_transactions') }}">
+                <div class="field">
+                  <label for="reason-{{ t['id'] }}">Reason for declining transaction #{{ t['id'] }} *</label>
+                  <input type="text" id="reason-{{ t['id'] }}" name="reason" placeholder="e.g. Destination wallet does not match the account holder" required>
+                </div>
+                <div class="field">
+                  <label for="instr-{{ t['id'] }}">What the member should do next</label>
+                  <input type="text" id="instr-{{ t['id'] }}" name="instructions" placeholder="e.g. Update your wallet address and submit a new request">
+                </div>
+                <div class="reject-actions">
+                  <button type="submit" class="btn btn-danger btn-sm">Confirm decline</button>
+                  <button type="button" class="btn btn-light btn-sm" data-cancel-reject="rejrow-{{ t['id'] }}">Cancel</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+          {% endif %}
+          {% else %}
+          <tr><td colspan="8">No transactions recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- REVERSE MODAL -->
+<div class="modal-overlay" id="reverseModal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Reverse transaction</h3>
+      <button type="button" class="modal-close" id="reverseClose">✕</button>
+    </div>
+    <p class="modal-sub" id="reverseSub">Provide a reason and next steps. The member is notified immediately.</p>
+    <form method="post" id="reverseForm" class="form-grid">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ url_for('admin_transactions') }}">
+      <div class="field">
+        <label for="reverse_reason">Reason for reversal *</label>
+        <input type="text" id="reverse_reason" name="reason" placeholder="e.g. Duplicate deposit detected" required>
+      </div>
+      <div class="field">
+        <label for="reverse_instructions">What the member should do next</label>
+        <input type="text" id="reverse_instructions" name="instructions" placeholder="e.g. Contact support if you believe this is an error">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-light" id="reverseCancel">Cancel</button>
+        <button type="submit" class="btn btn-danger">Confirm reversal</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Toggle inline reject forms
+  document.querySelectorAll('[data-reject]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var row = document.getElementById('rejrow-' + btn.getAttribute('data-reject'));
+      if (row) { row.hidden = !row.hidden; }
+    });
+  });
+  document.querySelectorAll('[data-cancel-reject]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var row = document.getElementById(btn.getAttribute('data-cancel-reject'));
+      if (row) { row.hidden = true; }
+    });
+  });
+
+  // Reverse modal
+  var modal = document.getElementById('reverseModal');
+  var form = document.getElementById('reverseForm');
+  var sub = document.getElementById('reverseSub');
+  document.querySelectorAll('[data-reverse]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-reverse');
+      form.action = '/admin/transactions/' + id + '/reverse';
+      sub.textContent = 'Reversing ' + btn.getAttribute('data-type') + ' of ' +
+        btn.getAttribute('data-amount') + ' for ' + btn.getAttribute('data-member') +
+        '. Provide a reason and next steps — the member is notified immediately.';
+      modal.hidden = false;
+    });
+  });
+  function closeModal() { modal.hidden = true; }
+  document.getElementById('reverseClose').addEventListener('click', closeModal);
+  document.getElementById('reverseCancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+</script>
+{% endblock %}
+
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
