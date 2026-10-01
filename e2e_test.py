@@ -1,14 +1,24 @@
-"""End-to-end test for the enhanced Brightpath app.
+"""End-to-end test for the enhanced Bright Future Grant app.
 
 Flow: register -> apply -> admin approve (account issued) -> admin push money
       -> receipt -> notifications -> support chat (with image) -> admin reply.
 """
+import os
 import re
 import sys
 import time
 import requests
 
-BASE = "http://127.0.0.1:8092"
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except Exception:  # noqa: BLE001
+    pass
+
+BASE = os.environ.get("BASE", "http://127.0.0.1:8092")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@brightfuturegrant.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@12345")
 CSRF_RE = re.compile(r'name="_csrf_token" value="([^"]+)"')
 EMAIL = f"applicant{int(time.time())}@example.com"
 
@@ -51,7 +61,7 @@ app_id = m.group(1) if m else "1"
 # ---- 3. Admin login & approve ----
 a = requests.Session()
 tok, _ = csrf(a, f"{BASE}/login")
-r = a.post(f"{BASE}/login", data={"_csrf_token": tok, "email": "admin@brightfuturegrant.com", "password": "Admin@12345"}, allow_redirects=True)
+r = a.post(f"{BASE}/login", data={"_csrf_token": tok, "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, allow_redirects=True)
 check("admin login -> admin 200", r.status_code == 200 and "Review dashboard" in r.text)
 
 tok, _ = csrf(a, f"{BASE}/admin")
@@ -258,7 +268,7 @@ check("admin messages page 200", r.status_code == 200 and "Compose a message" in
 tok, _ = csrf(a, f"{BASE}/admin/messages")
 r = a.post(f"{BASE}/admin/messages/send", data={
     "_csrf_token": tok, "audience": "all", "title": "You are not alone",
-    "body": "A shout-out from the Brightpath team: keep going, we believe in you.",
+    "body": "A shout-out from the Bright Future Grant team: keep going, we believe in you.",
 }, allow_redirects=True)
 check("admin broadcast to all sent", r.status_code == 200 and "delivered to all" in r.text)
 

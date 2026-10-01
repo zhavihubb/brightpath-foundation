@@ -1,4 +1,4 @@
-"""Populate Brightpath with a small, realistic demo dataset.
+"""Populate Bright Future Grant with a small, realistic demo dataset.
 
 Run:  python seed_demo.py
 This is optional. To start completely fresh instead, delete charity.db and
@@ -75,7 +75,7 @@ WITHDRAWALS = [
 ]
 
 SUPPORT = [
-    ("How do I receive my grant?", "I was approved — where will the money go?", "It will be deposited into your Brightpath account. You'll get an email and a receipt here.", 0),
+    ("How do I receive my grant?", "I was approved — where will the money go?", "It will be deposited into your Bright Future Grant account. You'll get an email and a receipt here.", 0),
     ("Update my phone number", "I changed my number, can you update it?", "Of course — you can update it yourself under My Account → Profile.", 1),
 ]
 
@@ -108,7 +108,7 @@ def main():
         db.execute(
             "INSERT INTO notifications (user_id, title, body, link, category, is_read, created_at) "
             "VALUES (?,?,?,?,?,?,?)",
-            (cur.lastrowid, "Welcome to Brightpath",
+            (cur.lastrowid, "Welcome to Bright Future Grant",
              f"Hi {name.split()[0]}, your account is ready. You can now submit a grant application.",
              "/dashboard", "account", 1, now(days)),
         )
@@ -134,13 +134,13 @@ def main():
                 "sender_name, sender_account, sender_routing, status, created_by, created_at) "
                 "VALUES (?,?,?,?,?,?,?,?,?,'completed',1,?)",
                 (uid, "deposit", awarded, currency, f"{crisis} grant disbursement", ref,
-                 "Brightpath Crisis Relief Foundation", "8001234567", "121000358", now(2)),
+                 "Bright Future Grant", "8001234567", "121000358", now(2)),
             )
             db.execute(
                 "INSERT INTO notifications (user_id, title, body, link, category, is_read, created_at) "
                 "VALUES (?,?,?,?,?,?,?)",
                 (uid, f"Deposit received — {currency} {awarded:,.2f}",
-                 f"A deposit of {currency} {awarded:,.2f} has been made to your Brightpath account. "
+                 f"A deposit of {currency} {awarded:,.2f} has been made to your Bright Future Grant account. "
                  "A full receipt is available in your dashboard.", "/transactions", "transaction", 0, now(2)),
             )
 
@@ -217,10 +217,10 @@ def main():
 
     # A demo shout-out / motivational broadcast to every member.
     if member_ids:
-        b_title = "You've got this \u2014 a note from the Brightpath team"
-        b_body = ("Hello from the Brightpath team. We know times can be tough, but your strength "
+        b_title = "You've got this \u2014 a note from the Bright Future Grant team"
+        b_body = ("Hello from the Bright Future Grant team. We know times can be tough, but your strength "
                   "and resilience inspire us every day. Keep going \u2014 we are standing with you. "
-                  "Warm regards, The Brightpath Team")
+                  "Warm regards, The Bright Future Grant Team")
         db.execute(
             "INSERT INTO broadcasts (title, body, audience, recipient_id, recipient_count, "
             "created_by, created_at) VALUES (?,?,?,?,?,?,?)",

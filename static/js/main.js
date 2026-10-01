@@ -1,4 +1,4 @@
-// Brightpath Crisis Relief Foundation — front-end interactions
+// Bright Future Grant — front-end interactions
 
 document.addEventListener('DOMContentLoaded', function () {
   // Mobile navigation toggle

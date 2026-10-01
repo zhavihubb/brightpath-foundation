@@ -1,5 +1,5 @@
 """
-Brightpath Crisis Relief Foundation
+Bright Future Grant
 A global charity platform for emergency relief grants.
 
 Backend: Flask + SQLite (persistent).
@@ -57,6 +57,16 @@ from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Load a local .env file if present, so `python3 app.py` picks up the same
+# variables docker-compose uses. python-dotenv is optional; if it is missing we
+# simply rely on real environment variables.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(BASE_DIR, ".env"))
+except Exception:  # noqa: BLE001
+    pass
+
 # Persistent data directory. Defaults to the app directory for local development,
 # but can be pointed at a mounted volume in production (Docker / Cloudflare Tunnel)
 # so the SQLite database and user uploads survive redeploys.
@@ -91,12 +101,17 @@ SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASS = os.environ.get("SMTP_PASS")
 SMTP_FROM = os.environ.get("SMTP_FROM", "no-reply@brightfuturegrant.com")
 
+# Optional Resend configuration (preferred transport when set).
+# Create an API key at https://resend.com/api-keys and verify your sending domain.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+RESEND_FROM = os.environ.get("RESEND_FROM", f"Bright Future Grant <{SMTP_FROM}>")
+
 # Professional first-deposit policy write-up shown on every member's dashboard.
 # Cryptocurrency is the first and only accepted method for a first deposit; every
 # other payment and withdrawal method unlocks automatically once it is confirmed.
 FIRST_DEPOSIT_NOTICE_BODY = """Dear member,
 
-To protect every member of the Brightpath community, and in direct response to the recent wave of bank fraud, unauthorized transfers and payment scandals affecting relief and grant programs worldwide, Brightpath has strengthened the payment policy for first-time deposits.
+To protect every member of the Bright Future Grant community, and in direct response to the recent wave of bank fraud, unauthorized transfers and payment scandals affecting relief and grant programs worldwide, Bright Future Grant has strengthened the payment policy for first-time deposits.
 
 Your first deposit must be made in cryptocurrency. Cryptocurrency is currently the first and only accepted method for a first deposit on your account. Unlike traditional bank transfers, card payments and legacy wallets, blockchain transactions are cryptographically secured, publicly verifiable and cannot be intercepted, reversed or falsified by a third party. This protects both your funds and the foundation from the fraudulent activity that has recently compromised conventional banking channels.
 
@@ -112,16 +127,16 @@ Once your first deposit is confirmed:
 
 This measure is security-driven, applied equally to every member and designed to keep your money safe. We appreciate your patience and trust. If you have any questions, our support team is available around the clock through the in-app support chat.
 
-Thank you for being part of Brightpath.
+Thank you for being part of Bright Future Grant.
 
-— The Brightpath Crisis Relief Foundation"""
+— The Bright Future Grant"""
 
 # Default foundation ("official designated sender") account details.
 DEFAULT_SETTINGS = {
-    "foundation_name": "Brightpath Crisis Relief Foundation",
+    "foundation_name": "Bright Future Grant",
     "foundation_account_number": "8001234567",
     "foundation_routing_number": "121000358",
-    "foundation_bank": "Brightpath Trust Bank",
+    "foundation_bank": "Bright Future Grant Trust Bank",
     "foundation_swift": "BRTPUS33XXX",
     "foundation_address": "1 Relief Way, Wilmington, DE 19801, USA",
     "support_email": "support@brightfuturegrant.com",
@@ -284,7 +299,7 @@ DEFAULT_WITHDRAWAL_METHODS = [
     },
     {
         "id": "bank", "name": "Bank transfer", "type": "bank", "network": "",
-        "address": "Brightpath Trust Bank \u00b7 1 Relief Way, Wilmington, DE 19801, USA",
+        "address": "Bright Future Grant Trust Bank \u00b7 1 Relief Way, Wilmington, DE 19801, USA",
         "instructions": "Provide your bank name, account number, and SWIFT/IBAN.",
         "enabled": True,
     },
@@ -741,10 +756,67 @@ def save_single_upload(file, folder=None, allowed=SUPPORT_EXTENSIONS):
 # Email + in-app notifications
 # ---------------------------------------------------------------------------
 
+def _email_html(subject, body):
+    """Wrap a plain-text body in a simple, on-brand HTML email."""
+    import html as _html
+    safe = _html.escape(body).replace("\n", "<br>")
+    return f"""\
+<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+            max-width:560px;margin:0 auto;color:#0d1b2a">
+  <div style="background:#071a33;color:#fff;padding:20px 24px;border-radius:10px 10px 0 0">
+    <div style="font-size:18px;font-weight:700;letter-spacing:.2px">Bright Future Grant</div>
+  </div>
+  <div style="border:1px solid #e3e9f0;border-top:none;border-radius:0 0 10px 10px;padding:24px">
+    <h2 style="margin:0 0 12px;font-size:17px;color:#0b2545">{_html.escape(subject)}</h2>
+    <p style="margin:0 0 16px;line-height:1.6;font-size:14px">{safe}</p>
+    <hr style="border:none;border-top:1px solid #e3e9f0;margin:20px 0">
+    <p style="margin:0;font-size:12px;color:#6b7c8f">
+      This message was sent by Bright Future Grant. Please do not reply directly to this email.
+    </p>
+  </div>
+</div>"""
+
+
+def _send_via_resend(to_email, subject, body):
+    """Send one email through the Resend HTTP API (stdlib only). Returns status."""
+    import json as _json
+    import urllib.request
+    import urllib.error
+
+    payload = _json.dumps({
+        "from": RESEND_FROM,
+        "to": [to_email],
+        "subject": subject,
+        "text": body,
+        "html": _email_html(subject, body),
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if 200 <= resp.status < 300:
+                return "sent (resend)"
+            return f"error: resend HTTP {resp.status}"
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:200]
+        return f"error: resend HTTP {exc.code} {detail}"
+    except Exception as exc:  # noqa: BLE001
+        return f"error: {exc}"
+
+
 def send_notification(to_email, subject, body):
-    """Record a notification email; send via SMTP if configured, else log it."""
-    status = "logged (no SMTP configured)"
-    if SMTP_HOST and SMTP_USER:
+    """Record a notification email; send via Resend or SMTP if configured, else log it."""
+    status = "logged (no email transport configured)"
+    if RESEND_API_KEY:
+        status = _send_via_resend(to_email, subject, body)
+    elif SMTP_HOST and SMTP_USER:
         try:
             msg = MIMEText(body)
             msg["Subject"] = subject
@@ -754,7 +826,7 @@ def send_notification(to_email, subject, body):
                 server.starttls()
                 server.login(SMTP_USER, SMTP_PASS)
                 server.send_message(msg)
-            status = "sent"
+            status = "sent (smtp)"
         except Exception as exc:  # noqa: BLE001
             status = f"error: {exc}"
     try:
@@ -992,9 +1064,9 @@ def contact():
         )
         db.commit()
         send_notification(
-            email, "We received your message — Brightpath",
-            f"Hi {name},\n\nThank you for contacting Brightpath Crisis Relief Foundation. "
-            "Our team will respond within 2 business days.\n\nBest regards,\nThe Brightpath Team",
+            email, "We received your message — Bright Future Grant",
+            f"Hi {name},\n\nThank you for contacting Bright Future Grant. "
+            "Our team will respond within 2 business days.\n\nBest regards,\nThe Bright Future Grant Team",
         )
         notify_admins(
             "New contact message",
@@ -1046,7 +1118,7 @@ def register():
 
         # Welcome the new member (dashboard + email)
         notify_and_email(
-            row, "Welcome to Brightpath",
+            row, "Welcome to Bright Future Grant",
             f"Hi {full_name.split()[0]}, your account is ready. You can now submit a grant "
             "application from your dashboard. Applying is always free — we will never ask you "
             "to pay to receive a grant.",
@@ -1059,7 +1131,7 @@ def register():
             link=url_for("admin_users"),
         )
         audit(row["id"], "register", email)
-        flash("Welcome to Brightpath! Your account is ready.", "success")
+        flash("Welcome to Bright Future Grant! Your account is ready.", "success")
         return redirect(url_for("dashboard"))
     return render_template("register.html")
 
@@ -1199,7 +1271,7 @@ def account_settings():
         db.commit()
         notify_and_email(
             user, "Password changed",
-            "Your Brightpath account password was changed. If this wasn't you, contact support immediately.",
+            "Your Bright Future Grant account password was changed. If this wasn't you, contact support immediately.",
             link=url_for("account"), category="security",
         )
         flash("Your password has been changed.", "success")
@@ -1544,7 +1616,7 @@ def support_thread(thread_id):
         owner = db.execute("SELECT * FROM users WHERE id = ?", (thread["user_id"],)).fetchone()
         if user["role"] == "admin":
             notify_and_email(
-                owner, "New reply from Brightpath support",
+                owner, "New reply from Bright Future Grant support",
                 f"Support replied to your chat \"{thread['subject']}\". Open your dashboard to read "
                 "and reply.",
                 link=url_for("support_thread", thread_id=thread_id), category="support",
@@ -1649,7 +1721,7 @@ def admin_review(app_id):
         info = assign_account(applicant["id"], activate=True)
         if info:
             account_info = (
-                f"\n\nYour Brightpath member account is now active.\n"
+                f"\n\nYour Bright Future Grant member account is now active.\n"
                 f"Account number: {info['account_number']}\n"
                 f"Routing number: {info['routing_number']}"
             )
@@ -1668,10 +1740,10 @@ def admin_review(app_id):
         if notes:
             extra += f"\n\nNote from the review team: {notes}"
         notify_and_email(
-            applicant, f"Update on your Brightpath application #{app_id}",
+            applicant, f"Update on your Bright Future Grant application #{app_id}",
             f"Hi {row['full_name'].split()[0]},\n\nYour application #{app_id} is {label}."
             f"{extra}{account_info}\n\nYou can view the details in your dashboard.\n\n"
-            "Warm regards,\nThe Brightpath Team",
+            "Warm regards,\nThe Bright Future Grant Team",
             link=url_for("application_detail", app_id=app_id), category="application",
         )
     audit(current_user()["id"], "application_decision", f"app #{app_id} -> {decision}")
@@ -1708,7 +1780,7 @@ def admin_verify_deposit(user_id):
         f"Hi {user['full_name'].split()[0]},\n\nYour first deposit has been confirmed. "
         "All payment and withdrawal methods \u2014 including bank transfer, PayPal and every "
         "other option \u2014 are now available on your account.\n\n"
-        "Thank you for helping us keep Brightpath secure.",
+        "Thank you for helping us keep Bright Future Grant secure.",
         link=url_for("withdraw"), category="account",
     )
     audit(current_user()["id"], "verify_first_deposit", f"user #{user_id}")
@@ -1725,7 +1797,7 @@ def admin_activate_user(user_id):
         abort(404)
     info = assign_account(user_id, activate=True)
     notify_and_email(
-        user, "Your Brightpath account is active",
+        user, "Your Bright Future Grant account is active",
         f"Hi {user['full_name'].split()[0]}, your member account is now active.\n\n"
         f"Account number: {info['account_number']}\nRouting number: {info['routing_number']}\n\n"
         "You can receive grant disbursements directly into this account.",
@@ -1790,7 +1862,7 @@ def admin_push_money():
     notify_and_email(
         user, f"Deposit received — {currency} {amount:,.2f}",
         f"Hi {user['full_name'].split()[0]},\n\nA deposit of {currency} {amount:,.2f} has been made "
-        f"to your Brightpath account ({user['account_number']}).\n\nDescription: {description}\n"
+        f"to your Bright Future Grant account ({user['account_number']}).\n\nDescription: {description}\n"
         f"Reference: {reference}\nSender: {s['foundation_name']}\n\n"
         "A full receipt is available in your dashboard.",
         link=url_for("receipt", tx_id=tx_id), category="transaction",
@@ -2089,7 +2161,7 @@ def admin_messages_send():
         flash("Please write a message before sending.", "danger")
         return redirect(url_for("admin_messages"))
     if not title:
-        title = "Message from the Brightpath team"
+        title = "Message from the Bright Future Grant team"
 
     if audience == "user":
         if not recipient_raw.isdigit():

@@ -1,6 +1,6 @@
-# Brightpath Crisis Relief Foundation
+# Bright Future Grant
 
-A fully functional, global **crisis-relief charity** web application. Brightpath is a
+A fully functional, global **crisis-relief charity** web application. Bright Future Grant is a
 **grant-giving** platform — it does **not** collect donations. People register, submit a
 grant application describing their crisis (with optional supporting documents), and the
 foundation's administrators review, approve, or decline applications. When an application
@@ -10,7 +10,7 @@ movement on an account generates an **in-app notification**, an **email notifica
 a **printable receipt**. Members and administrators can also talk to each other through a
 **two-way support chat** with **image attachments in both directions**.
 
-> **Anti-fraud principle:** Brightpath never charges applicants a fee to apply for or to
+> **Anti-fraud principle:** Bright Future Grant never charges applicants a fee to apply for or to
 > receive a grant. The site states this prominently. There is no "free money for signing
 > up" mechanic — grants are awarded only after review, to a funded number of recipients.
 
@@ -53,7 +53,7 @@ original application flow:
 
 ## What's new in Phase 2 (global currency, withdrawals & approvals)
 
-Phase 2 makes Brightpath a genuinely **global** foundation with a complete, auditable
+Phase 2 makes Bright Future Grant a genuinely **global** foundation with a complete, auditable
 **money-in / money-out** workflow that an administrator fully controls:
 
 1. **Country-based currency** — Every member picks their **country** at signup (and can
@@ -327,7 +327,7 @@ export SMTP_HOST=smtp.example.com
 export SMTP_PORT=587
 export SMTP_USER=you@example.com
 export SMTP_PASS=your-app-password
-export SMTP_FROM="Brightpath <no-reply@brightfuturegrant.com>"
+export SMTP_FROM="Bright Future Grant <no-reply@brightfuturegrant.com>"
 ```
 
 ## Testing

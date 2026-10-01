@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}My Account — Brightpath{% endblock %}
+{% block title %}My Account — Bright Future Grant{% endblock %}
 {% block content %}
 <section class="dash-head">
   <div class="container">
     <span class="eyebrow" style="background:rgba(255,255,255,.12); color:var(--amber);">Member Account</span>
     <h1>My account</h1>
-    <p>Your secure Brightpath member account, balance, and personal details.</p>
+    <p>Your secure Bright Future Grant member account, balance, and personal details.</p>
     <div class="dash-actions">
       <a class="btn btn-primary" href="{{ url_for('withdraw') }}">↑ Withdraw funds</a>
       <a class="btn btn-outline" href="{{ url_for('transactions') }}">Transactions</a>
@@ -50,7 +50,7 @@
             <div class="account-field-value">{{ current_user['currency'] }} — {{ CURRENCY_NAMES.get(current_user['currency'], current_user['currency']) }}</div>
           </div>
         </div>
-        <p class="muted-note">These are your official Brightpath member details. Grant disbursements are deposited directly into this account and recorded with a receipt.</p>
+        <p class="muted-note">These are your official Bright Future Grant member details. Grant disbursements are deposited directly into this account and recorded with a receipt.</p>
         {% else %}
         <p class="muted-note">Your account number and routing number will be issued automatically once your grant application is approved. You can still update your profile below.</p>
         {% endif %}
@@ -131,7 +131,7 @@
         <ul class="check-list">
           <li><span class="tick">✓</span> <span>Every deposit, withdrawal, application decision, and support reply is recorded.</span></li>
           <li><span class="tick">✓</span> <span>You are notified by email and dashboard notification on every account activity.</span></li>
-          <li><span class="tick">✓</span> <span>Brightpath will never ask you to pay to receive a grant.</span></li>
+          <li><span class="tick">✓</span> <span>Bright Future Grant will never ask you to pay to receive a grant.</span></li>
         </ul>
       </div>
     </div>

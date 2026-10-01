@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ thread['subject'] }} — Support — Brightpath{% endblock %}
+{% block title %}{{ thread['subject'] }} — Support — Bright Future Grant{% endblock %}
 {% block content %}
 <section class="dash-head">
   <div class="container">
@@ -11,7 +11,7 @@
       {% if is_admin %}
         Conversation with {{ owner['full_name'] }} ({{ owner['email'] }})
       {% else %}
-        Conversation with the Brightpath support team
+        Conversation with the Bright Future Grant support team
       {% endif %}
       · <span class="badge badge-{{ 'approved' if thread['status']=='open' else 'declined' }}">{{ thread['status']|capitalize }}</span>
     </p>
@@ -42,7 +42,7 @@
             </a>
             {% endif %}
             <div class="chat-meta">
-              <span>{{ 'You' if mine else (owner['full_name'] if is_admin else 'Brightpath Support') }}</span>
+              <span>{{ 'You' if mine else (owner['full_name'] if is_admin else 'Bright Future Grant Support') }}</span>
               <span>{{ m['created_at']|datetimefmt }}</span>
             </div>
           </div>

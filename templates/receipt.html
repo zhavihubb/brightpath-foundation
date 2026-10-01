@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Receipt {{ tx['reference'] }} — Brightpath{% endblock %}
+{% block title %}Receipt {{ tx['reference'] }} — Bright Future Grant{% endblock %}
 {% block content %}
 <section class="section">
   <div class="container" style="max-width:720px;">
@@ -24,7 +24,7 @@
 
       <div class="receipt-title">
         <h1>{{ 'Withdrawal' if tx['type']=='withdrawal' else 'Deposit' }} Receipt</h1>
-        <p>Official record of funds {{ 'withdrawn from' if tx['type']=='withdrawal' else 'deposited into' }} your Brightpath member account.</p>
+        <p>Official record of funds {{ 'withdrawn from' if tx['type']=='withdrawal' else 'deposited into' }} your Bright Future Grant member account.</p>
       </div>
 
       <div class="receipt-amount">
@@ -84,7 +84,7 @@
       {% endif %}
 
       <div class="receipt-foot">
-        <p>This receipt was generated automatically by {{ s.foundation_name }}. Brightpath never charges applicants a fee. If you did not expect this transaction, please contact us at {{ s.support_email }}.</p>
+        <p>This receipt was generated automatically by {{ s.foundation_name }}. Bright Future Grant never charges applicants a fee. If you did not expect this transaction, please contact us at {{ s.support_email }}.</p>
         <p class="receipt-ref">Receipt ID: BP-RCPT-{{ '%06d' % tx['id'] }}</p>
       </div>
     </div>

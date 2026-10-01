@@ -1,4 +1,4 @@
-# Deploying Brightpath (GitHub + Cloudflare)
+# Deploying Bright Future Grant (GitHub + Cloudflare)
 
 This guide takes you from this repository to a live, HTTPS-secured site on your
 own domain using **Cloudflare**. It covers the domain you buy from **WhoGoHost**,
@@ -53,7 +53,7 @@ out — use them if you prefer to do it by hand.
 | **Cloudflare Pages** (optional) | Fast static landing page for the apex domain | `public/` folder in this repo |
 
 > **Important:** Cloudflare *Pages* and *Workers* can only host **static** sites.
-> Brightpath is a dynamic Flask app with a database, so it must run on a server
+> Bright Future Grant is a dynamic Flask app with a database, so it must run on a server
 > and be published through a **Cloudflare Tunnel**. That is exactly what this
 > guide sets up. The optional Pages site (step 6) is only for a static landing
 > page.
@@ -164,7 +164,7 @@ docker compose up -d --build
 docker compose logs -f brightpath    # watch it boot
 ```
 
-Visit **https://app.brightfuturegrant.com** — you should see Brightpath with a valid
+Visit **https://app.brightfuturegrant.com** — you should see Bright Future Grant with a valid
 Cloudflare TLS certificate.
 
 ### First login
