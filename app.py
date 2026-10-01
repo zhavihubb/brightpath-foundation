@@ -797,6 +797,10 @@ def _send_via_resend(to_email, subject, body):
         headers={
             "Authorization": f"Bearer {RESEND_API_KEY}",
             "Content-Type": "application/json",
+            # A real User-Agent is required: Cloudflare (in front of Resend)
+            # rejects the default "Python-urllib/x" signature with error 1010.
+            "User-Agent": "BrightFutureGrant/1.0 (+https://brightfuturegrant.com)",
+            "Accept": "application/json",
         },
     )
     try:
