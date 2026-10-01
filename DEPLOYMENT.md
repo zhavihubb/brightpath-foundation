@@ -27,14 +27,23 @@ getting the code onto **GitHub**, and hosting the Flask app behind a
 
 ## 1. Push the code to GitHub
 
-If you haven't already:
+The code is already on GitHub:
+
+> **Repository:** <https://github.com/zhavihubb/brightpath-foundation>
+
+To push further changes:
 
 ```bash
-git init -b main
 git add .
-git commit -m "Brightpath: initial commit"
-gh auth login                       # or use a Personal Access Token
-gh repo create brightpath --private --source=. --push
+git commit -m "your message"
+git push            # origin/main is already configured
+```
+
+To clone it fresh onto your server (step 3):
+
+```bash
+git clone https://github.com/zhavihubb/brightpath-foundation.git
+cd brightpath-foundation
 ```
 
 > **Never commit secrets.** `.env`, `charity.db` and `uploads/` are already in
