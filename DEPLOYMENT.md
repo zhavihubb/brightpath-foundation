@@ -15,6 +15,33 @@ getting the code onto **GitHub**, and hosting the Flask app behind a
 
 ---
 
+## ⚡ Fast path (automated)
+
+Two scripts do most of the work. You only supply a Cloudflare API token and a server.
+
+**A. Create the Cloudflare zone, tunnel, DNS and Pages project (one command):**
+
+```bash
+CF_API_TOKEN=your-cloudflare-api-token python3 scripts/cloudflare_setup.py
+```
+
+It prints the **two nameservers** (set them at WhoGoHost), the **tunnel token**
+(paste into `.env`), and the exact next commands. See the token's required
+permissions at the top of the script.
+
+**B. Bootstrap a fresh Ubuntu/Debian VPS (one command):**
+
+```bash
+CLOUDFLARE_TUNNEL_TOKEN=xxxx ADMIN_EMAIL=you@brightfuturegrant.com \
+ADMIN_PASSWORD='S0me-Str0ng-Pass' bash scripts/deploy_server.sh
+```
+
+It installs Docker, clones the repo, writes a `.env` with a fresh `SECRET_KEY`,
+and starts the app + tunnel. The manual steps below are the same thing, spelled
+out — use them if you prefer to do it by hand.
+
+---
+
 ## 0. How the pieces fit together
 
 | Piece | What it does | Where it lives |

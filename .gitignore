@@ -63,3 +63,6 @@ htmlcov/
 
 # --- Agent working notes ---
 todo.md
+
+# --- Cloudflare setup output (contains account/zone/tunnel IDs) ---
+scripts/cloudflare_setup.out.json
